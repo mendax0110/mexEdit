@@ -3,3 +3,6 @@ build/
 
 # Ignore the cmake-build-debug directory
 cmake-build-debug/
+
+# Ignore the .idea directory
+.idea/
