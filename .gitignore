@@ -5,4 +5,4 @@ build/
 cmake-build-debug/
 
 # Ignore the .idea directory
-.idea/
+.idea
