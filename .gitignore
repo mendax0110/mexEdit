@@ -6,3 +6,9 @@ cmake-build-debug/
 
 # Ignore the .idea directory
 .idea
+
+# ignore ..vscode directory
+.vscode/
+
+#ignroe the .dist directory
+.dist/
