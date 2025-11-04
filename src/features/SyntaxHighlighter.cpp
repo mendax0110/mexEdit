@@ -90,7 +90,7 @@ void SyntaxHighlighter::loadLanguageDefinitions()
     // Languages are loaded on demand
 }
 
-LanguageDefinition SyntaxHighlighter::getLanguageDefinition(const std::string& languageName) const
+LanguageDefinition SyntaxHighlighter::getLanguageDefinition(const std::string& languageName)
 {
     if (languageName == "cpp")
     {

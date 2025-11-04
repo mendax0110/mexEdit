@@ -1,12 +1,14 @@
+#include <utility>
+
 #include "../include/core/EditCommands.h"
 
 using namespace mexedit::core;
 
-InsertTextCommand::InsertTextCommand(std::shared_ptr<Document> document, std::shared_ptr<Cursor> cursor, const Cursor::Position& position, const std::string& text)
+InsertTextCommand::InsertTextCommand(std::shared_ptr<Document> document, std::shared_ptr<Cursor> cursor, const Cursor::Position& position, std::string  text)
     : document_(std::move(document))
     , cursor_(std::move(cursor))
     , position_(position)
-    , text_(text)
+    , text_(std::move(text))
     , executed_(false)
 {
 
@@ -79,11 +81,11 @@ std::string DeleteTextCommand::getDescription() const
     return "Delete text: \"" + deletedText_ + "\"";
 }
 
-InsertLineCommand::InsertLineCommand(std::shared_ptr<Document> document, std::shared_ptr<Cursor> cursor, size_t linePosition, const std::string& content)
+InsertLineCommand::InsertLineCommand(std::shared_ptr<Document> document, std::shared_ptr<Cursor> cursor, size_t linePosition, std::string  content)
     : document_(std::move(document))
     , cursor_(std::move(cursor))
     , linePosition_(linePosition)
-    , content_(content)
+    , content_(std::move(content))
     , executed_(false)
 {
 

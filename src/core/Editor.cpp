@@ -1,6 +1,7 @@
 #include "../include/core/Editor.h"
 #include "../include/core/EditCommands.h"
 #include <algorithm>
+#include <memory>
 
 using namespace mexedit::core;
 
@@ -78,7 +79,7 @@ void Editor::insertText(const std::string& text)
         return;
     }
 
-    auto command = std::unique_ptr<InsertTextCommand>(new InsertTextCommand(document_, cursor_, cursor_->getPosition(), text));
+    auto command = std::make_unique<InsertTextCommand>(document_, cursor_, cursor_->getPosition(), text);
     commandManager_->executeCommand(std::move(command));
     
     auto pos = cursor_->getPosition();
@@ -113,7 +114,7 @@ void Editor::insertNewLine()
     auto insertBeforeCommand = std::unique_ptr<InsertTextCommand>(new InsertTextCommand(document_, cursor_, {pos.line, 0}, beforeCursor));
     commandManager_->executeCommand(std::move(insertBeforeCommand));
     
-    auto insertLineCommand = std::unique_ptr<InsertLineCommand>(new InsertLineCommand(document_, cursor_, pos.line + 1, afterCursor));
+    auto insertLineCommand = std::make_unique<InsertLineCommand>(document_, cursor_, pos.line + 1, afterCursor);
     commandManager_->executeCommand(std::move(insertLineCommand));
     
     // Move cursor to beginning of new line
@@ -136,7 +137,7 @@ void Editor::deleteCharacter()
         const std::string& line = document_->getLine(pos.line);
         if (pos.column < line.length())
         {
-            auto command = std::unique_ptr<DeleteTextCommand>(new DeleteTextCommand(document_, cursor_, pos, 1));
+            auto command = std::make_unique<DeleteTextCommand>(document_, cursor_, pos, 1);
             commandManager_->executeCommand(std::move(command));
         }
     }
@@ -156,7 +157,7 @@ void Editor::deleteBackward()
         pos.column--;
         cursor_->setPosition(pos);
         
-        auto command = std::unique_ptr<DeleteTextCommand>(new DeleteTextCommand(document_, cursor_, pos, 1));
+        auto command = std::make_unique<DeleteTextCommand>(document_, cursor_, pos, 1);
         commandManager_->executeCommand(std::move(command));
     }
     else if (pos.line > 0)
@@ -164,7 +165,7 @@ void Editor::deleteBackward()
         size_t prevLineLength = document_->getLineLength(pos.line - 1);
         std::string currentLineContent = document_->getLine(pos.line);
         
-        auto deleteLineCommand = std::unique_ptr<DeleteLineCommand>(new DeleteLineCommand(document_, cursor_, pos.line));
+        auto deleteLineCommand = std::make_unique<DeleteLineCommand>(document_, cursor_, pos.line);
         commandManager_->executeCommand(std::move(deleteLineCommand));
         
         if (!currentLineContent.empty())
@@ -187,7 +188,7 @@ void Editor::deleteLine()
     auto pos = cursor_->getPosition();
     if (pos.line < document_->getLineCount())
     {
-        auto command = std::unique_ptr<DeleteLineCommand>(new DeleteLineCommand(document_, cursor_, pos.line));
+        auto command = std::make_unique<DeleteLineCommand>(document_, cursor_, pos.line);
         commandManager_->executeCommand(std::move(command));
         
         if (pos.line >= document_->getLineCount() && document_->getLineCount() > 0)
@@ -214,12 +215,12 @@ bool Editor::openFile(const std::filesystem::path& path)
 
 bool Editor::saveFile(const std::filesystem::path& path)
 {
-    return document_ ? document_->save(path) : false;
+    return document_ && document_->save(path);
 }
 
 bool Editor::isModified() const
 {
-    return document_ ? document_->isModified() : false;
+    return document_ && document_->isModified();
 }
 
 bool Editor::undo()

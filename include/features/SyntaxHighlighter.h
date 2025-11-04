@@ -119,7 +119,7 @@ namespace mexedit::features
          * @param languageName The name of the programming language
          * @return LanguageDefinition 
          */
-        LanguageDefinition getLanguageDefinition(const std::string& languageName) const;
+        static LanguageDefinition getLanguageDefinition(const std::string& languageName) ;
 
         /**
          * @brief Create the language definition for C++

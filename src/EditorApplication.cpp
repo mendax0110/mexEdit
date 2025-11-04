@@ -1,8 +1,10 @@
 #include "../include/EditorApplication.h"
 #include "../include/ui/Renderer.h"
 #include "../include/utils/Clipboard.h"
+#include "../include/features/SearchEngine.h"
 #include <ncurses.h>
 #include <algorithm>
+#include <memory>
 
 using namespace mexedit;
 
@@ -90,6 +92,45 @@ bool EditorApplication::openFile(const std::filesystem::path& path)
         showStatusMessage("Failed to open: " + path.filename().string());
         return false;
     }
+}
+
+bool EditorApplication::openSearchDialog(const std::string& pattern, bool newSearch)
+{
+    if (!editor_->hasDocument())
+        return false;
+
+    const auto& lines = editor_->getDocument()->getLines();
+    auto pos = editor_->getCursor().getPosition();
+
+    features::SearchOptions options{false, false, false, true};
+
+    size_t startLine = newSearch ? 0 : lastSearchLine;
+    size_t startColumn = newSearch ? 0 : lastSearchColumn;
+
+    auto result = searchEngine_->findNext(pattern, lines, startLine, startColumn, options);
+
+    if (result.line < editor_->getDocument()->getLineCount())
+    {
+        editor_->moveCursor({result.line, result.startColumn});
+        selection_.isActive = true;
+        selection_.startPos = {result.line, result.startColumn};
+        selection_.endPos = {result.line, result.endColumn};
+        markDirty(true, false, true, false);
+
+        searchActive_ = true;
+        currentSearchPattern_ = pattern;
+
+        lastSearchLine = result.line;
+        lastSearchColumn = result.endColumn;
+
+        showStatusMessage("Found: " + pattern + " (Press ENTER for next)");
+        return true;
+    }
+
+    // No match found
+    showStatusMessage("No match found for: " + pattern);
+    searchActive_ = false;
+    return false;
 }
 
 bool EditorApplication::saveFile(const std::filesystem::path& path)
@@ -215,6 +256,13 @@ void EditorApplication::onCursorMoved(const core::Cursor::Position& /* position 
 
 void EditorApplication::onKeyPressed(int key)
 {
+    if ((key == 10 || key == 13) && searchActive_)
+    {
+        // Continue search from last match
+        openSearchDialog(currentSearchPattern_, false); // false = continue search
+        return;
+    }
+
     // Handle Tab key (ASCII 9)
     if (key == 9)
     {
@@ -227,11 +275,17 @@ void EditorApplication::onKeyPressed(int key)
         editor_->insertText("    ");
         return;
     }
-    
-    // Handle Enter key (key 10 = LF, key 13 = CR)
+
     if (key == 10 || key == 13)
     {
-        // Check if file explorer has focus and handle file opening
+        // If a search is active, pressing Enter should find the next occurrence
+        if (searchActive_)
+        {
+            openSearchDialog(currentSearchPattern_);
+            return;
+        }
+
+        // File explorer check
         if (showFileExplorer_ && fileExplorer_->hasSelection())
         {
             const auto* entry = fileExplorer_->getSelectedEntry();
@@ -247,7 +301,7 @@ void EditorApplication::onKeyPressed(int key)
                 return;
             }
         }
-        
+
         // Otherwise handle as normal editing key (insert new line)
         handleEditingKey(key);
         return;
@@ -309,7 +363,14 @@ void EditorApplication::onKeyPressed(int key)
     
     // Handle ESC and other special keys
     if (key == 27)
-    {   
+    {
+        if (searchActive_)
+        {
+            searchActive_ = false;
+            showStatusMessage("Search cancelled");
+            return;
+        }
+
         showCommandHelp();
         return;
     }
@@ -410,7 +471,8 @@ void EditorApplication::renderFileExplorer()
     renderer_->drawText(1, explorerStartX + 1, currentDir, ui::ColorPair::FileExplorer);
     
     // Draw simple horizontal line under directory
-    for (int i = 0; i < viewport_.fileExplorerWidth - 2; i++) {
+    for (int i = 0; i < viewport_.fileExplorerWidth - 2; i++)
+    {
         renderer_->drawText(2, explorerStartX + i, "-", ui::ColorPair::Border);
     }
     
@@ -425,12 +487,15 @@ void EditorApplication::renderFileExplorer()
         
         // Simple ASCII indicators for directories and files
         std::string prefix;
-        if (entry.isDirectory) {
+        if (entry.isDirectory)
+        {
             prefix = "[DIR] ";
-        } else {
+        }
+        else
+        {
             prefix = "      ";
         }
-        
+
         displayName = prefix + displayName;
         
         if (displayName.length() > static_cast<size_t>(viewport_.fileExplorerWidth - 2))
@@ -1039,7 +1104,7 @@ void EditorApplication::doRenderUpdateBar()
 
 void EditorApplication::showCommandHelp()
 {
-    showStatusMessage("Commands: :help :open :save :new :quit :toggle-explorer :toggle-numbers | ESC:Cancel");
+    showStatusMessage("Commands: :help :open :save :new :quit :toggle-explorer :toggle-numbers :search | ESC:Cancel");
     doRenderUpdateBar();
     
     std::string command;
@@ -1330,8 +1395,45 @@ void EditorApplication::handleCommand(const std::string& command)
         markDirty(true, false, true, false);  // Mark editor and status as dirty
         showStatusMessage(showLineNumbers_ ? "Line numbers ON" : "Line numbers OFF");
     }
+    else if (command == ":search" || command == "search")
+    {
+        auto inputSearchTerm = [this]() -> std::string
+        {
+            std::string searchTerm;
+            showStatusMessage("Search: ");
+            doRenderUpdateBar();
+
+            int key;
+            while ((key = renderer_->getInput()) != 10 && key != 13)
+            {
+                if (key == KEY_BACKSPACE || key == 127)
+                {
+                    if (!searchTerm.empty())
+                        searchTerm.pop_back();
+                }
+                else if (key >= 32 && key <= 126)
+                {
+                    searchTerm += static_cast<char>(key);
+                }
+
+                showStatusMessage("Search: " + searchTerm);
+                doRenderUpdateBar();
+            }
+            return searchTerm;
+        };
+
+        std::string term = inputSearchTerm();
+
+        lastSearchLine = 0;
+        lastSearchColumn = 0;
+
+        openSearchDialog(term, true);
+    }
+
     else
     {
         showStatusMessage("Unknown command: " + command + " | Type :help for available commands");
     }
 }
+
+

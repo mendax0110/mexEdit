@@ -258,7 +258,7 @@ namespace mexedit::ui
          * @param height The height of the area to refresh
          * @param width The width of the area to refresh
          */
-        void refreshArea(int y, int x, int height, int width);
+        static void refreshArea(int y, int x, int height, int width);
         
         /**
          * @brief Get the current screen size
@@ -385,7 +385,7 @@ namespace mexedit::ui
          * @brief Setup color pairs for rendering
          * 
          */
-        void setupColors();
+        static void setupColors();
         
         /**
          * @brief Configure terminal attributes for proper key handling

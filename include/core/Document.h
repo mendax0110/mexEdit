@@ -72,6 +72,13 @@ namespace mexedit::core
          * @return const std::string& 
          */
         const std::string& getLine(size_t line) const;
+
+        /**
+         * @brief Get all lines of the document
+         *
+         * @return const std::vector<std::string>&
+         */
+        const std::vector<std::string>& getLines() const { return lines_; }
         
         /**
          * @brief Get the entire text of the document

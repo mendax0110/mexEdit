@@ -56,6 +56,9 @@ namespace mexedit
          * @return false If the file could not be opened
          */
         bool openFile(const std::filesystem::path& path);
+
+
+        bool openSearchDialog(const std::string& pattern = "", bool newSearch = true);
         
         /**
          * @brief Save the current file
@@ -109,6 +112,11 @@ namespace mexedit
         bool showLineNumbers_;
         bool showFileExplorer_;
         std::string statusMessage_;
+
+        bool searchActive_ = false;
+        std::string currentSearchPattern_;
+        size_t lastSearchLine = 0;
+        size_t lastSearchColumn = 0;
 
         /// @brief Viewport configuration \struct ViewPort
         struct ViewPort

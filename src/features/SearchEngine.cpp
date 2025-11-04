@@ -1,13 +1,11 @@
 #include "../include/features/SearchEngine.h"
 #include <algorithm>
-#include <stdint.h>
+#include <cstdint>
+#include <ranges>
 
 using namespace mexedit::features;
 
-SearchEngine::SearchEngine()
-{
-
-}
+SearchEngine::SearchEngine() = default;
 
 std::vector<SearchMatch> SearchEngine::findAll(const std::string& pattern, const std::vector<std::string>& document, const SearchOptions& options)
 {
@@ -68,11 +66,11 @@ SearchMatch SearchEngine::findPrevious(const std::string& pattern,const std::vec
         {
             if (static_cast<size_t>(lineNum) == startLine)
             {
-                for (auto it = lineMatches.rbegin(); it != lineMatches.rend(); ++it)
+                for (auto & lineMatch : std::ranges::reverse_view(lineMatches))
                 {
-                    if (it->startColumn < startColumn)
+                    if (lineMatch.startColumn < startColumn)
                     {
-                        return *it;
+                        return lineMatch;
                     }
                 }
             } 
@@ -96,10 +94,8 @@ int SearchEngine::replaceAll(const std::string& pattern, const std::string& repl
 {
     int replacements = 0;
     
-    for (size_t lineNum = 0; lineNum < document.size(); ++lineNum)
+    for (auto & line : document)
     {
-        std::string& line = document[lineNum];
-        
         try
         {
             if (options.useRegex)
@@ -263,7 +259,7 @@ std::regex SearchEngine::createRegexPattern(const std::string& pattern, const Se
     return std::regex(regexPattern, flags);
 }
 
-std::string SearchEngine::escapeRegexSpecialChars(const std::string& input) const
+std::string SearchEngine::escapeRegexSpecialChars(const std::string& input)
 {
     std::string result;
     result.reserve(input.size() * 2); // Reserve space for potential escapes

@@ -1,11 +1,12 @@
 #include "../include/features/FileExplorer.h"
 #include "../include/utils/FileUtils.h"
 #include <algorithm>
+#include <utility>
 
 using namespace mexedit::features;
 
-FileExplorer::FileExplorer(const std::filesystem::path& rootPath)
-    : currentPath_(rootPath)
+FileExplorer::FileExplorer(std::filesystem::path  rootPath)
+    : currentPath_(std::move(rootPath))
     , selectedIndex_(0)
     , showHiddenFiles_(false)
 {
@@ -202,10 +203,10 @@ void FileExplorer::notifySelection()
     }
 }
 
-std::string FileExplorer::formatFileSize(size_t size) const
+std::string FileExplorer::formatFileSize(size_t size)
 {
     const char* units[] = {"B", "KB", "MB", "GB", "TB"};
-    double dsize = static_cast<double>(size);
+    auto dsize = static_cast<double>(size);
     int unit = 0;
     
     while (dsize >= 1024.0 && unit < 4)
@@ -222,7 +223,7 @@ std::string FileExplorer::formatFileSize(size_t size) const
     {
         char buffer[32];
         snprintf(buffer, sizeof(buffer), "%.1f %s", dsize, units[unit]);
-        return std::string(buffer);
+        return {buffer};
     }
 }
 

@@ -38,7 +38,7 @@ namespace mexedit::utils
             std::lock_guard<std::mutex> lock(mutex_);
             objectCounts_[objectType]++;
             totalObjects_++;
-            
+            (void)ptr;
             #ifdef DEBUG
             std::cout << "[DEBUG] Created " << objectType << " (Total: " << objectCounts_[objectType] << ")" << std::endl;
             #endif
@@ -59,6 +59,7 @@ namespace mexedit::utils
             {
                 objectCounts_[objectType]--;
                 totalObjects_--;
+                (void)ptr;
             }
             
             #ifdef DEBUG

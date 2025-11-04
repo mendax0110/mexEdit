@@ -172,7 +172,7 @@ namespace mexedit::features
          * @param input The input string
          * @return std::string The escaped string
          */
-        std::string escapeRegexSpecialChars(const std::string& input) const;
+        static std::string escapeRegexSpecialChars(const std::string& input) ;
     };
 } // namespace mexedit::features
 

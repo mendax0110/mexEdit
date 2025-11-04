@@ -22,7 +22,7 @@ namespace mexedit::core
          * @param text The text to insert
          */
         InsertTextCommand(std::shared_ptr<Document> document, std::shared_ptr<Cursor> cursor,
-                        const Cursor::Position& position, const std::string& text);
+                        const Cursor::Position& position, std::string  text);
 
         /**
          * @brief Execute the command
@@ -107,7 +107,7 @@ namespace mexedit::core
          * @param content The content of the new line
          */
         InsertLineCommand(std::shared_ptr<Document> document, std::shared_ptr<Cursor> cursor,
-                        size_t linePosition, const std::string& content = "");
+                        size_t linePosition, std::string  content = "");
         
         /**
          * @brief Execute the command

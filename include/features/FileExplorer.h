@@ -30,7 +30,7 @@ public:
      * 
      * @param rootPath The initial root path to explore
      */
-    explicit FileExplorer(const std::filesystem::path& rootPath = std::filesystem::current_path());
+    explicit FileExplorer(std::filesystem::path  rootPath = std::filesystem::current_path());
     
     /**
      * @brief Destroy the File Explorer object
@@ -207,7 +207,7 @@ private:
      * @param size The file size in bytes
      * @return std::string The formatted file size
      */
-    std::string formatFileSize(size_t size) const;
+    static std::string formatFileSize(size_t size) ;
 };
 
 } // namespace mexedit::features

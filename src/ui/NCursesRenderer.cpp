@@ -95,6 +95,7 @@ void NCursesRenderer::refreshArea(int y, int x, int height, int width)
 {
     // optimized refresh for specific areas
     touchline(stdscr, y, height);
+    touchline(stdscr, x, width);
     wnoutrefresh(stdscr);
     doupdate();
 }
@@ -154,7 +155,7 @@ void NCursesRenderer::drawBox(int y, int x, int height, int width)
 
 void NCursesRenderer::setCursorPosition(const core::Cursor::Position& pos)
 {
-    move(pos.line, pos.column);
+    move(static_cast<int>(pos.line), static_cast<int>(pos.column));
 }
 
 void NCursesRenderer::setCursorVisible(bool visible)

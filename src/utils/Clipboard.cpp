@@ -13,13 +13,15 @@ std::string Clipboard::clipboardContent_;
 // Helper function to execute a command and get output
 std::string executeCommand(const std::string& cmd) 
 {
-    std::array<char, 128> buffer;
+    std::array<char, 128> buffer{};
     std::string result;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-    if (!pipe) {
+    if (!pipe)
+    {
         return "";
     }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+    {
         result += buffer.data();
     }
     return result;
@@ -29,7 +31,8 @@ std::string executeCommand(const std::string& cmd)
 bool executeWriteCommand(const std::string& cmd, const std::string& input)
 {
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "w"), pclose);
-    if (!pipe) {
+    if (!pipe)
+    {
         return false;
     }
     fwrite(input.c_str(), 1, input.length(), pipe.get());
@@ -43,19 +46,22 @@ void Clipboard::setText(const std::string& text)
     
     // Try to use system clipboard
     // First try xclip (most common on Linux)
-    if (system("command -v xclip > /dev/null 2>&1") == 0) {
+    if (system("command -v xclip > /dev/null 2>&1") == 0)
+    {
         executeWriteCommand("xclip -selection clipboard", text);
         return;
     }
     
     // Try xsel as alternative
-    if (system("command -v xsel > /dev/null 2>&1") == 0) {
+    if (system("command -v xsel > /dev/null 2>&1") == 0)
+    {
         executeWriteCommand("xsel --clipboard --input", text);
         return;
     }
     
     // Try wl-clipboard for Wayland
-    if (system("command -v wl-copy > /dev/null 2>&1") == 0) {
+    if (system("command -v wl-copy > /dev/null 2>&1") == 0)
+    {
         executeWriteCommand("wl-copy", text);
         return;
     }
@@ -69,11 +75,14 @@ std::string Clipboard::getText()
     std::string systemClipboard;
     
     // Try xclip first
-    if (system("command -v xclip > /dev/null 2>&1") == 0) {
+    if (system("command -v xclip > /dev/null 2>&1") == 0)
+    {
         systemClipboard = executeCommand("xclip -selection clipboard -o 2>/dev/null");
-        if (!systemClipboard.empty()) {
+        if (!systemClipboard.empty())
+        {
             // Remove trailing newline if present
-            if (!systemClipboard.empty() && systemClipboard.back() == '\n') {
+            if (!systemClipboard.empty() && systemClipboard.back() == '\n')
+            {
                 systemClipboard.pop_back();
             }
             clipboardContent_ = systemClipboard;  // Update internal cache
@@ -82,10 +91,12 @@ std::string Clipboard::getText()
     }
     
     // Try xsel as alternative
-    if (system("command -v xsel > /dev/null 2>&1") == 0) {
+    if (system("command -v xsel > /dev/null 2>&1") == 0)
+    {
         systemClipboard = executeCommand("xsel --clipboard --output 2>/dev/null");
         if (!systemClipboard.empty()) {
-            if (!systemClipboard.empty() && systemClipboard.back() == '\n') {
+            if (!systemClipboard.empty() && systemClipboard.back() == '\n')
+            {
                 systemClipboard.pop_back();
             }
             clipboardContent_ = systemClipboard;
@@ -94,10 +105,13 @@ std::string Clipboard::getText()
     }
     
     // Try wl-clipboard for Wayland
-    if (system("command -v wl-paste > /dev/null 2>&1") == 0) {
+    if (system("command -v wl-paste > /dev/null 2>&1") == 0)
+    {
         systemClipboard = executeCommand("wl-paste 2>/dev/null");
-        if (!systemClipboard.empty()) {
-            if (!systemClipboard.empty() && systemClipboard.back() == '\n') {
+        if (!systemClipboard.empty())
+        {
+            if (!systemClipboard.empty() && systemClipboard.back() == '\n')
+            {
                 systemClipboard.pop_back();
             }
             clipboardContent_ = systemClipboard;
@@ -119,11 +133,16 @@ void Clipboard::clear()
     clipboardContent_.clear();
     
     // Try to clear system clipboard
-    if (system("command -v xclip > /dev/null 2>&1") == 0) {
+    if (system("command -v xclip > /dev/null 2>&1") == 0)
+    {
         executeWriteCommand("xclip -selection clipboard", "");
-    } else if (system("command -v xsel > /dev/null 2>&1") == 0) {
+    }
+    else if (system("command -v xsel > /dev/null 2>&1") == 0)
+    {
         executeWriteCommand("xsel --clipboard --input", "");
-    } else if (system("command -v wl-copy > /dev/null 2>&1") == 0) {
+    }
+    else if (system("command -v wl-copy > /dev/null 2>&1") == 0)
+    {
         executeWriteCommand("wl-copy", "");
     }
 }

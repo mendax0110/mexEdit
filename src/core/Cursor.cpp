@@ -1,6 +1,6 @@
 #include "../include/core/Cursor.h"
 #include <algorithm>
-#include <stdint.h>
+#include <cstdint>
 
 using namespace mexedit::core;
 
