@@ -2,6 +2,7 @@
 #include "../include/ui/Renderer.h"
 #include "../include/utils/Clipboard.h"
 #include "../include/features/SearchEngine.h"
+#include "../include/utils/MemoryDebugger.h"
 #include <ncurses.h>
 #include <algorithm>
 #include <memory>
@@ -9,27 +10,30 @@
 using namespace mexedit;
 
 EditorApplication::EditorApplication(std::unique_ptr<ui::IRenderer> renderer)
-    : renderer_(std::move(renderer))
-    , running_(false)
-    , showLineNumbers_(true)
-    , showFileExplorer_(true)
-{    
+        : renderer_(std::move(renderer))
+        , running_(false)
+        , showLineNumbers_(true)
+        , showFileExplorer_(true)
+{
+    TRACK_MEMORY(EditorApplication, this);
+
     // Initialize core components
     editor_ = std::make_unique<core::Editor>();
     syntaxHighlighter_ = std::make_unique<features::SyntaxHighlighter>();
     searchEngine_ = std::make_unique<features::SearchEngine>();
     fileExplorer_ = std::make_unique<features::FileExplorer>();
-    
+
     // Setup callbacks
     editor_->setDocumentChangedCallback([this]() { onDocumentChanged(); });
     editor_->setCursorMovedCallback([this](const core::Cursor::Position& pos)
-    { 
-        onCursorMoved(pos); 
+    {
+        onCursorMoved(pos);
     });
 }
 
 EditorApplication::~EditorApplication()
 {
+    UNTRACK_MEMORY(EditorApplication, this);
     if (running_)
     {
         shutdown();
@@ -64,7 +68,7 @@ void EditorApplication::run()
         {
             render();
         }
-        
+
         int key = renderer_->getInput();
         onKeyPressed(key);
     }
@@ -218,6 +222,7 @@ void EditorApplication::newFile()
     editor_->setDocument(document);
     syntaxHighlighter_->setLanguage("text");
     showStatusMessage("New file created");
+    //TRACK_MEMORY(core::Document, document.get());
 }
 
 bool EditorApplication::hasUnsavedChanges() const

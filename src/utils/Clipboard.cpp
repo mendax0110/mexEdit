@@ -1,4 +1,5 @@
 #include "../include/utils/Clipboard.h"
+#include "../include/utils/MemoryDebugger.h"
 #include <cstdlib>
 #include <cstdio>
 #include <memory>
@@ -9,6 +10,16 @@
 using namespace mexedit::utils;
 
 std::string Clipboard::clipboardContent_;
+
+Clipboard::Clipboard()
+{
+    TRACK_MEMORY(Clipboard, this);
+}
+
+Clipboard::~Clipboard()
+{
+    UNTRACK_MEMORY(Clipboard, this);
+}
 
 // Helper function to execute a command and get output
 std::string executeCommand(const std::string& cmd) 

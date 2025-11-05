@@ -13,7 +13,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-option(ENABLE_MEMORY_DEBUGGING "Enable custom memory debugging" OFF)
+option(ENABLE_MEMORY_DEBUGGING "Enable custom memory debugging" ON)
 option(ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan in debug mode" ON)
 
 find_package(PkgConfig REQUIRED)

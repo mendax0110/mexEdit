@@ -30,7 +30,7 @@ namespace mexedit::core
         /**
          * @brief Destroy the Editor object
          */
-        ~Editor() = default;
+        ~Editor();
 
         /**
          * @brief Set the document

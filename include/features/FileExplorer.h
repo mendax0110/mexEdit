@@ -36,7 +36,7 @@ public:
      * @brief Destroy the File Explorer object
      * 
      */
-    ~FileExplorer() = default;
+    ~FileExplorer();
 
     /**
      * @brief Set the Current Directory object

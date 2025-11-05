@@ -47,7 +47,7 @@ namespace mexedit::features
          * @brief Destroy the Search Engine object
          * 
          */
-        ~SearchEngine() = default;
+        ~SearchEngine();
 
         /**
          * @brief Find all occurrences of a pattern in a document

@@ -1,7 +1,7 @@
 #include "../include/ui/Renderer.h"
+#include "../include/utils/MemoryDebugger.h"
 #include <ncurses.h>
 #include <stdexcept>
-#include <signal.h>
 #include <csignal>
 #include <termios.h>
 #include <unistd.h>
@@ -9,12 +9,16 @@
 
 using namespace mexedit::ui;
 
-NCursesRenderer::NCursesRenderer() : initialized_(false)
+NCursesRenderer::NCursesRenderer()
+    : initialized_(false)
+    , originalTermios_()
 {
+    TRACK_MEMORY(NCursesRenderer, this);
 }
 
 NCursesRenderer::~NCursesRenderer()
 {
+    UNTRACK_MEMORY(NCursesRenderer, this);
     if (initialized_)
     {
         shutdown();

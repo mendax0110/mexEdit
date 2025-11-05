@@ -1,9 +1,20 @@
 #include "../include/utils/FileUtils.h"
+#include "../include/utils/MemoryDebugger.h"
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 
 using namespace mexedit::utils;
+
+FileUtils::FileUtils()
+{
+    TRACK_MEMORY(FileUtils, this);
+}
+
+FileUtils::~FileUtils()
+{
+    UNTRACK_MEMORY(FileUtils, this);
+}
 
 bool FileUtils::exists(const std::filesystem::path& path)
 {

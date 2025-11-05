@@ -56,7 +56,7 @@ namespace mexedit::features
          * @brief Destroy the Syntax Highlighter object
          * 
          */
-        ~SyntaxHighlighter() = default;
+        ~SyntaxHighlighter();
 
         /**
          * @brief Detect the programming language of a file

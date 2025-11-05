@@ -39,6 +39,16 @@ namespace mexedit::utils
         
     private:
         static std::string clipboardContent_;
+
+        /**
+         * @brief Private constructor to prevent instantiation
+         */
+        Clipboard();
+
+        /**
+         * @brief Private destructor
+         */
+        ~Clipboard();
     };
 }
 

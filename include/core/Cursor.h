@@ -60,7 +60,7 @@ namespace mexedit::core
         /**
          * @brief Destroy the Cursor object
          */
-        ~Cursor() = default;
+        ~Cursor();
 
         /**
          * @brief Get the Position object

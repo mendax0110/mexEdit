@@ -57,7 +57,14 @@ namespace mexedit
          */
         bool openFile(const std::filesystem::path& path);
 
-
+        /**
+         * @brief Open the search dialog
+         *
+         * @param pattern The initial search pattern
+         * @param newSearch Whether this is a new search or continuing an existing one
+         * @return true If the search was performed successfully
+         * @return false If the search failed or was canceled
+         */
         bool openSearchDialog(const std::string& pattern = "", bool newSearch = true);
         
         /**
@@ -90,14 +97,14 @@ namespace mexedit
          * @return true If there are unsaved changes
          * @return false If there are no unsaved changes
          */
-        bool hasUnsavedChanges() const;
+        [[nodiscard]] bool hasUnsavedChanges() const;
         
         /**
          * @brief Get the current file name
          * 
          * @return std::string The current file name
          */
-        std::string getCurrentFileName() const;
+        [[nodiscard]] std::string getCurrentFileName() const;
 
     private:
         // Core components
@@ -275,6 +282,9 @@ namespace mexedit
          */
         void clearDirtyRegions();
 
+        /**
+         * @brief Perform rendering updates based on dirty regions
+         */
         void doRenderUpdateBar();
         
         /**
@@ -309,7 +319,7 @@ namespace mexedit
          * 
          * @return std::string The selected text
          */
-        std::string copySelection() const;
+        [[nodiscard]] std::string copySelection() const;
         
         /**
          * @brief Delete selected text

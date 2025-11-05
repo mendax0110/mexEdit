@@ -1,4 +1,5 @@
 #include "../include/core/Cursor.h"
+#include "../include/utils/MemoryDebugger.h"
 #include <algorithm>
 #include <cstdint>
 
@@ -6,7 +7,13 @@ using namespace mexedit::core;
 
 Cursor::Cursor(PositionValidator validator) : validator_(std::move(validator))
 {
+    TRACK_MEMORY(Cursor, this);
     position_ = {0, 0};
+}
+
+Cursor::~Cursor()
+{
+    UNTRACK_MEMORY(Cursor, this);
 }
 
 void Cursor::setPosition(const Position& pos)

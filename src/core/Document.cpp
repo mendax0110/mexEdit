@@ -1,5 +1,6 @@
 #include "../include/core/Document.h"
 #include "../include/utils/FileUtils.h"
+#include "../include/utils/MemoryDebugger.h"
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -8,6 +9,7 @@ using namespace mexedit::core;
 
 Document::Document() : isModified_(false)
 {
+    TRACK_MEMORY(Document, this);
     lines_.emplace_back();
 }
 
@@ -15,10 +17,16 @@ Document::Document(const std::filesystem::path& path)
     : filePath_(path)
     , isModified_(false)
 {
+    TRACK_MEMORY(Document, this);
     if (!load(path))
     {
         lines_.emplace_back();
     }
+}
+
+Document::~Document()
+{
+    UNTRACK_MEMORY(Document, this);
 }
 
 bool Document::load(const std::filesystem::path& path)

@@ -33,7 +33,7 @@ namespace mexedit::core
          * @brief Destroy the Document object
          * 
          */
-        ~Document() = default;
+        ~Document();
 
         /**
          * @brief Load the document from a file
@@ -71,28 +71,28 @@ namespace mexedit::core
          * @param line The line number
          * @return const std::string& 
          */
-        const std::string& getLine(size_t line) const;
+        [[nodiscard]] const std::string& getLine(size_t line) const;
 
         /**
          * @brief Get all lines of the document
          *
          * @return const std::vector<std::string>&
          */
-        const std::vector<std::string>& getLines() const { return lines_; }
+        [[nodiscard]] const std::vector<std::string>& getLines() const { return lines_; }
         
         /**
          * @brief Get the entire text of the document
          * 
          * @return std::string 
          */
-        std::string getText() const;
+        [[nodiscard]] std::string getText() const;
         
         /**
          * @brief Get the number of lines in the document
          * 
          * @return size_t 
          */
-        size_t getLineCount() const { return lines_.size(); }
+        [[nodiscard]] size_t getLineCount() const { return lines_.size(); }
         
         /**
          * @brief Get the length of a specific line
@@ -100,7 +100,7 @@ namespace mexedit::core
          * @param line The line number
          * @return size_t 
          */
-        size_t getLineLength(size_t line) const;
+        [[nodiscard]] size_t getLineLength(size_t line) const;
         
         /**
          * @brief Check if the document is empty
@@ -108,7 +108,7 @@ namespace mexedit::core
          * @return true 
          * @return false 
          */
-        bool isEmpty() const { return lines_.empty() || (lines_.size() == 1 && lines_[0].empty()); }
+        [[nodiscard]] bool isEmpty() const { return lines_.empty() || (lines_.size() == 1 && lines_[0].empty()); }
 
         /**
          * @brief Insert text at a specific position

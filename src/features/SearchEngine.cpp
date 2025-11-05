@@ -1,11 +1,22 @@
 #include "../include/features/SearchEngine.h"
+#include "../include/utils/MemoryDebugger.h"
 #include <algorithm>
 #include <cstdint>
 #include <ranges>
 
 using namespace mexedit::features;
 
-SearchEngine::SearchEngine() = default;
+SearchEngine::SearchEngine()
+    : currentMatches_()
+    , searchHistory_()
+{
+    TRACK_MEMORY(SearchEngine, this);
+}
+
+SearchEngine::~SearchEngine()
+{
+    UNTRACK_MEMORY(SearchEngine, this);
+}
 
 std::vector<SearchMatch> SearchEngine::findAll(const std::string& pattern, const std::vector<std::string>& document, const SearchOptions& options)
 {

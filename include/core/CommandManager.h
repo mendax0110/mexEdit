@@ -50,7 +50,7 @@ namespace mexedit::core
         /**
          * @brief Destroy the Command Manager object
          */
-        ~CommandManager() = default;
+        ~CommandManager();
 
         /**
          * @brief Execute a command and add it to the history

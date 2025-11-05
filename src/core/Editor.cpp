@@ -1,5 +1,6 @@
 #include "../include/core/Editor.h"
 #include "../include/core/EditCommands.h"
+#include "../include/utils/MemoryDebugger.h"
 #include <algorithm>
 #include <memory>
 
@@ -10,7 +11,13 @@ Editor::Editor(std::shared_ptr<Document> document)
     , cursor_(std::make_shared<Cursor>())
     , commandManager_(std::make_unique<CommandManager>())
 {
+    TRACK_MEMORY(Editor, this);
     setupCursorValidator();
+}
+
+Editor::~Editor()
+{
+    UNTRACK_MEMORY(Editor, this);
 }
 
 void Editor::setDocument(std::shared_ptr<Document> document)

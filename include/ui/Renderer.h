@@ -379,7 +379,7 @@ namespace mexedit::ui
 
     private:
         bool initialized_;
-        struct termios originalTermios_;
+        struct termios originalTermios_{};
         
         /**
          * @brief Setup color pairs for rendering

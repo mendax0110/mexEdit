@@ -1,5 +1,6 @@
 #include "../include/features/FileExplorer.h"
 #include "../include/utils/FileUtils.h"
+#include "../include/utils/MemoryDebugger.h"
 #include <algorithm>
 #include <utility>
 
@@ -10,7 +11,13 @@ FileExplorer::FileExplorer(std::filesystem::path  rootPath)
     , selectedIndex_(0)
     , showHiddenFiles_(false)
 {
+    TRACK_MEMORY(FileExplorer, this);
     refresh();
+}
+
+FileExplorer::~FileExplorer()
+{
+    UNTRACK_MEMORY(FileExplorer, this);
 }
 
 void FileExplorer::setCurrentDirectory(const std::filesystem::path& path)

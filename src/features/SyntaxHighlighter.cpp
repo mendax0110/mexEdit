@@ -1,4 +1,5 @@
 #include "../include/features/SyntaxHighlighter.h"
+#include "../include/utils/MemoryDebugger.h"
 #include "../include/utils/FileUtils.h"
 #include <unordered_map>
 
@@ -7,6 +8,12 @@ using namespace mexedit::features;
 SyntaxHighlighter::SyntaxHighlighter() : currentLanguage_("text")
 {
     loadLanguageDefinitions();
+    TRACK_MEMORY(SyntaxHighlighter, this);
+}
+
+SyntaxHighlighter::~SyntaxHighlighter()
+{
+    UNTRACK_MEMORY(SyntaxHighlighter, this);
 }
 
 void SyntaxHighlighter::detectLanguage(const std::filesystem::path& filePath)

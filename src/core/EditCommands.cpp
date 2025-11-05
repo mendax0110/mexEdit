@@ -1,6 +1,6 @@
 #include <utility>
-
 #include "../include/core/EditCommands.h"
+#include "../include/utils/MemoryDebugger.h"
 
 using namespace mexedit::core;
 
@@ -11,7 +11,12 @@ InsertTextCommand::InsertTextCommand(std::shared_ptr<Document> document, std::sh
     , text_(std::move(text))
     , executed_(false)
 {
+    TRACK_MEMORY(InsertTextCommand, this);
+}
 
+InsertTextCommand::~InsertTextCommand()
+{
+    UNTRACK_MEMORY(InsertTextCommand, this);
 }
 
 void InsertTextCommand::execute()
@@ -47,7 +52,12 @@ DeleteTextCommand::DeleteTextCommand(std::shared_ptr<Document> document, std::sh
     , length_(length)
     , executed_(false)
 {
-    
+    TRACK_MEMORY(DeleteTextCommand, this);
+}
+
+DeleteTextCommand::~DeleteTextCommand()
+{
+    UNTRACK_MEMORY(DeleteTextCommand, this);
 }
 
 void DeleteTextCommand::execute()
@@ -88,7 +98,12 @@ InsertLineCommand::InsertLineCommand(std::shared_ptr<Document> document, std::sh
     , content_(std::move(content))
     , executed_(false)
 {
+    TRACK_MEMORY(InsertLineCommand, this);
+}
 
+InsertLineCommand::~InsertLineCommand()
+{
+    UNTRACK_MEMORY(InsertTextCommand, this);
 }
 
 void InsertLineCommand::execute()
@@ -124,7 +139,12 @@ DeleteLineCommand::DeleteLineCommand(std::shared_ptr<Document> document, std::sh
     , linePosition_(linePosition)
     , executed_(false)
 {
+    TRACK_MEMORY(DeleteLineCommand, this);
+}
 
+DeleteLineCommand::~DeleteLineCommand()
+{
+    UNTRACK_MEMORY(DeleteLineCommand, this);
 }
 
 void DeleteLineCommand::execute()

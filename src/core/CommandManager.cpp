@@ -1,4 +1,5 @@
 #include "../include/core/CommandManager.h"
+#include "../include/utils/MemoryDebugger.h"
 #include <algorithm>
 
 using namespace mexedit::core;
@@ -7,7 +8,12 @@ CommandManager::CommandManager(size_t maxHistorySize)
     : currentIndex_(0)
     , maxHistorySize_(maxHistorySize)
 {
+    TRACK_MEMORY(CommandManager, this);
+}
 
+CommandManager::~CommandManager()
+{
+    UNTRACK_MEMORY(CommandManager, this);
 }
 
 void CommandManager::executeCommand(CommandPtr command)

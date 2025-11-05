@@ -131,7 +131,12 @@ namespace mexedit::utils
          * @brief Private constructor to prevent instantiation
          * 
          */
-        FileUtils() = default;
+        FileUtils();
+
+        /**
+         * @brief Private destructor
+         */
+        ~FileUtils();
     };
 } // namespace mexedit::utils
 

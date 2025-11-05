@@ -25,6 +25,11 @@ namespace mexedit::core
                         const Cursor::Position& position, std::string  text);
 
         /**
+         * @brief Destroy the Insert Text Command object
+         */
+        ~InsertTextCommand();
+
+        /**
          * @brief Execute the command
          * 
          */
@@ -41,7 +46,7 @@ namespace mexedit::core
          * 
          * @return std::string 
          */
-        std::string getDescription() const override;
+        [[nodiscard]] std::string getDescription() const override;
 
     private:
         std::shared_ptr<Document> document_;
@@ -67,6 +72,11 @@ namespace mexedit::core
                         const Cursor::Position& position, size_t length = 1);
 
         /**
+         * @brief Destroy the Delete Text Command object
+         */
+        ~DeleteTextCommand();
+
+        /**
          * @brief Execute the command
          * 
          */
@@ -83,7 +93,7 @@ namespace mexedit::core
          * 
          * @return std::string 
          */
-        std::string getDescription() const override;
+        [[nodiscard]] std::string getDescription() const override;
 
     private:
         std::shared_ptr<Document> document_;
@@ -108,6 +118,11 @@ namespace mexedit::core
          */
         InsertLineCommand(std::shared_ptr<Document> document, std::shared_ptr<Cursor> cursor,
                         size_t linePosition, std::string  content = "");
+
+        /**
+         * @brief Destroy the Insert Line Command object
+         */
+        ~InsertLineCommand();
         
         /**
          * @brief Execute the command
@@ -126,7 +141,7 @@ namespace mexedit::core
          * 
          * @return std::string 
          */
-        std::string getDescription() const override;
+        [[nodiscard]] std::string getDescription() const override;
 
     private:
         std::shared_ptr<Document> document_;
@@ -151,6 +166,11 @@ namespace mexedit::core
                         size_t linePosition);
 
         /**
+         * @brief Destroy the Delete Line Command object
+         */
+        ~DeleteLineCommand();
+
+        /**
          * @brief Execute the command
          * 
          */
@@ -167,7 +187,7 @@ namespace mexedit::core
          * 
          * @return std::string 
          */
-        std::string getDescription() const override;
+        [[nodiscard]] std::string getDescription() const override;
 
     private:
         std::shared_ptr<Document> document_;
