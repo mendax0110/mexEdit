@@ -104,8 +104,6 @@ bool EditorApplication::openSearchDialog(const std::string& pattern, bool newSea
         return false;
 
     const auto& lines = editor_->getDocument()->getLines();
-    auto pos = editor_->getCursor().getPosition();
-
     features::SearchOptions options{false, false, false, true};
 
     size_t startLine = newSearch ? 0 : lastSearchLine;
@@ -222,7 +220,6 @@ void EditorApplication::newFile()
     editor_->setDocument(document);
     syntaxHighlighter_->setLanguage("text");
     showStatusMessage("New file created");
-    //TRACK_MEMORY(core::Document, document.get());
 }
 
 bool EditorApplication::hasUnsavedChanges() const
@@ -471,58 +468,58 @@ void EditorApplication::renderFileExplorer()
     {
         currentDir = "..." + currentDir.substr(currentDir.length() - (viewport_.fileExplorerWidth - 7));
     }
-    
-    // Draw current directory
+
     renderer_->drawText(1, explorerStartX + 1, currentDir, ui::ColorPair::FileExplorer);
-    
-    // Draw simple horizontal line under directory
+
     for (int i = 0; i < viewport_.fileExplorerWidth - 2; i++)
     {
         renderer_->drawText(2, explorerStartX + i, "-", ui::ColorPair::Border);
     }
-    
-    // Draw file entries with improved styling
+
     const auto& entries = fileExplorer_->getEntries();
     size_t selectedIndex = fileExplorer_->getSelectedIndex();
-    
-    for (size_t i = 0; i < entries.size() && static_cast<int>(i + 3) < explorerHeight - 1; ++i)
+    size_t start = viewport_.fileExplorerScrollOffset;
+
+    for (size_t i = start; i < entries.size() && static_cast<int>(i - start + 3) < explorerHeight - 1; ++i)
     {
         const auto& entry = entries[i];
         std::string displayName = entry.displayName;
-        
-        // Simple ASCII indicators for directories and files
+
         std::string prefix;
         if (entry.isDirectory)
         {
-            prefix = "[DIR] ";
+            prefix = "[#] ";
         }
         else
         {
-            prefix = "      ";
+            prefix = "  ";
+        }
+        displayName = prefix + displayName;
+
+        if (!entry.isDirectory)
+        {
+            displayName = "|_" + displayName;
+            displayName += " " + fileExplorer_->formatFileSize(entry.fileSize);
         }
 
-        displayName = prefix + displayName;
-        
         if (displayName.length() > static_cast<size_t>(viewport_.fileExplorerWidth - 2))
         {
-            displayName = displayName.substr(0, viewport_.fileExplorerWidth - 5) + "...";
+            displayName = displayName.substr(0, viewport_.fileExplorerWidth - 5);
         }
-        
-        int y = static_cast<int>(i + 3);
-        
-        // Simple selection styling
+
+        int y = static_cast<int>(i - start + 3);
+
         if (i == selectedIndex)
         {
             renderer_->drawTextWithAttributes(y, explorerStartX + 1, displayName, A_REVERSE);
         }
         else
         {
-            // Different colors for directories vs files
             ui::ColorPair color = entry.isDirectory ? ui::ColorPair::FileExplorerDirectory : ui::ColorPair::FileExplorer;
             renderer_->drawText(y, explorerStartX + 1, displayName, color);
         }
     }
-    
+
     // Draw status info at bottom of file explorer
     int statusY = explorerHeight - 2;
     renderer_->drawText(statusY, explorerStartX + 1, "[Enter/F3:Open]", ui::ColorPair::FileExplorer);
@@ -749,6 +746,7 @@ void EditorApplication::handleMovementKey(int key, bool isShiftArrow)
             if (showFileExplorer_ && fileExplorer_->hasSelection())
             {
                 fileExplorer_->moveSelectionUp();
+                scrollFileExplorerIntoView();
                 markDirty(false, true, false, false);
             }
             else
@@ -768,6 +766,7 @@ void EditorApplication::handleMovementKey(int key, bool isShiftArrow)
             if (showFileExplorer_ && fileExplorer_->hasSelection())
             {
                 fileExplorer_->moveSelectionDown();
+                scrollFileExplorerIntoView();
                 markDirty(false, true, false, false);
             }
             else
@@ -1077,6 +1076,23 @@ void EditorApplication::scrollToEnsureCursorVisible()
     else if (static_cast<int>(pos.line) >= viewport_.scrollOffsetY + viewport_.maxVisibleLines)
     {
         viewport_.scrollOffsetY = static_cast<int>(pos.line) - viewport_.maxVisibleLines + 1;
+    }
+}
+
+void EditorApplication::scrollFileExplorerIntoView()
+{
+    if (!showFileExplorer_) return;
+
+    int explorerHeight = renderer_->getScreenSize().height - 1;
+    size_t selectedIndex = fileExplorer_->getSelectedIndex();
+
+    if (selectedIndex < static_cast<size_t>(viewport_.fileExplorerScrollOffset))
+    {
+        viewport_.fileExplorerScrollOffset = static_cast<size_t>(selectedIndex);
+    }
+    else if (selectedIndex >= static_cast<size_t>(viewport_.fileExplorerScrollOffset + explorerHeight -3))
+    {
+        viewport_.fileExplorerScrollOffset = static_cast<int>(selectedIndex) - (explorerHeight - 4);
     }
 }
 

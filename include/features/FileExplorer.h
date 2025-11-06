@@ -176,12 +176,21 @@ public:
      */
     void moveSelectionDown();
 
+/**
+ * @brief Format file size as a human-readable string
+ *
+ * @param size The file size in bytes
+ * @return std::string The formatted file size
+ */
+static std::string formatFileSize(size_t size) ;
+
 private:
     std::filesystem::path currentPath_;
     std::vector<FileEntry> entries_;
     size_t selectedIndex_;
     bool showHiddenFiles_;
     SelectionCallback selectionCallback_;
+
 
     /** 
      * @brief Load the file and directory entries from the current path
@@ -200,14 +209,7 @@ private:
      * 
      */
     void notifySelection();
-    
-    /**
-     * @brief Format file size as a human-readable string
-     * 
-     * @param size The file size in bytes
-     * @return std::string The formatted file size
-     */
-    static std::string formatFileSize(size_t size) ;
+
 };
 
 } // namespace mexedit::features

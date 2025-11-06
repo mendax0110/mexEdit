@@ -132,12 +132,12 @@ void NCursesRenderer::drawTextWithAttributes(int y, int x, const std::string& te
 
 void NCursesRenderer::drawHorizontalLine(int y, int startX, int endX)
 {
-    mvhline(y, startX, ACS_HLINE, endX - startX + 1);
+    mvhline(y, startX, ACS_HLINE, endX - startX + 1); // add color here
 }
 
 void NCursesRenderer::drawVerticalLine(int x, int startY, int endY)
 {
-    mvvline(startY, x, ACS_VLINE, endY - startY + 1);
+    mvvline(startY, x, ACS_VLINE, endY - startY + 1); // add color ere
 }
 
 void NCursesRenderer::drawBox(int y, int x, int height, int width)
@@ -180,17 +180,17 @@ void NCursesRenderer::setupColors()
     // Professional Dark Theme - Ensure black background throughout
     // Basic UI colors - Clean and professional
     init_pair(static_cast<int>(ColorPair::Normal), COLOR_WHITE, COLOR_BLACK);
-    init_pair(static_cast<int>(ColorPair::StatusBar), COLOR_WHITE, COLOR_BLUE);
-    init_pair(static_cast<int>(ColorPair::StatusBarActive), COLOR_YELLOW, COLOR_BLUE);
+    init_pair(static_cast<int>(ColorPair::StatusBar), COLOR_BLACK, COLOR_GREEN);
+    init_pair(static_cast<int>(ColorPair::StatusBarActive), COLOR_YELLOW, COLOR_GREEN);
     
     // File Explorer colors - Modern sidebar look
-    init_pair(static_cast<int>(ColorPair::FileExplorer), COLOR_WHITE, COLOR_BLACK);
+    init_pair(static_cast<int>(ColorPair::FileExplorer), COLOR_GREEN, COLOR_BLACK);
     init_pair(static_cast<int>(ColorPair::FileExplorerSelected), COLOR_BLACK, COLOR_WHITE);
     init_pair(static_cast<int>(ColorPair::FileExplorerDirectory), COLOR_CYAN, COLOR_BLACK);
     
     // Line numbers - Subtle but visible
-    init_pair(static_cast<int>(ColorPair::LineNumbers), COLOR_BLUE, COLOR_BLACK);
-    init_pair(static_cast<int>(ColorPair::LineNumbersActive), COLOR_YELLOW, COLOR_BLACK);
+    init_pair(static_cast<int>(ColorPair::LineNumbers), COLOR_GREEN, COLOR_BLACK);
+    init_pair(static_cast<int>(ColorPair::LineNumbersActive), COLOR_GREEN, COLOR_BLACK);
     
     // Enhanced syntax highlighting - Professional colors
     init_pair(static_cast<int>(ColorPair::Syntax_Keyword), COLOR_MAGENTA, COLOR_BLACK);
@@ -206,8 +206,8 @@ void NCursesRenderer::setupColors()
     init_pair(static_cast<int>(ColorPair::CursorLine), COLOR_WHITE, COLOR_BLACK);
     
     // UI Elements - Clean borders and titles
-    init_pair(static_cast<int>(ColorPair::Border), COLOR_WHITE, COLOR_BLACK);
-    init_pair(static_cast<int>(ColorPair::Title), COLOR_BLACK, COLOR_WHITE);
+    init_pair(static_cast<int>(ColorPair::Border), COLOR_GREEN, COLOR_BLACK);
+    init_pair(static_cast<int>(ColorPair::Title), COLOR_BLACK, COLOR_GREEN);
     
     // Status colors - Clear indication
     init_pair(static_cast<int>(ColorPair::Error), COLOR_RED, COLOR_BLACK);

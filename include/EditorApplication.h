@@ -133,6 +133,7 @@ namespace mexedit
             int editorWidth;
             int maxVisibleLines;
             int scrollOffsetY = 0;
+            int fileExplorerScrollOffset = 0;
         } viewport_;
         
         /// @brief Dirty region tracking for efficient redraws \struct DirtyRegions
@@ -237,6 +238,8 @@ namespace mexedit
          * 
          */
         void scrollToEnsureCursorVisible();
+
+        void scrollFileExplorerIntoView();
         
         /**
          * @brief Prompt the user to save changes if there are unsaved changes

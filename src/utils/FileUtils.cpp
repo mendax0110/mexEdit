@@ -146,19 +146,26 @@ bool FileUtils::writeFile(const std::filesystem::path& path, const std::string& 
 std::vector<std::filesystem::directory_entry> FileUtils::listDirectory(const std::filesystem::path& path)
 {
     std::vector<std::filesystem::directory_entry> entries;
-    
+
     try
     {
-        for (const auto& entry : std::filesystem::directory_iterator(path))
+        for (const auto& entry : std::filesystem::directory_iterator(
+                path, std::filesystem::directory_options::skip_permission_denied))
         {
             entries.push_back(entry);
         }
     }
-    catch (const std::exception&)
+    catch (const std::filesystem::filesystem_error& e)
     {
-        // Return empty vector on error
+        std::cerr << "Error listing directory '" << path.string()
+                  << "': " << e.what() << std::endl;
     }
-    
+    catch (const std::exception& e)
+    {
+        std::cerr << "Unexpected error listing directory '"
+                  << path.string() << "': " << e.what() << std::endl;
+    }
+
     return entries;
 }
 

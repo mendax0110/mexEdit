@@ -1,5 +1,4 @@
 #include "../include/EditorApplication.h"
-#include "../include/ui/Renderer.h"
 #include "../include/utils/MemoryDebugger.h"
 #include <iostream>
 #include <memory>

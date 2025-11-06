@@ -103,7 +103,7 @@ InsertLineCommand::InsertLineCommand(std::shared_ptr<Document> document, std::sh
 
 InsertLineCommand::~InsertLineCommand()
 {
-    UNTRACK_MEMORY(InsertTextCommand, this);
+    UNTRACK_MEMORY(InsertLineCommand, this);
 }
 
 void InsertLineCommand::execute()
