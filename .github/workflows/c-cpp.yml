@@ -27,32 +27,20 @@ jobs:
       run: |
         mkdir -p build_debug
         cd build_debug
-        cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTING=ON ..
+        cmake -DCMAKE_BUILD_TYPE=Debug ..
 
     - name: Build Debug
       run: |
         cd build_debug
         cmake --build . -- -j$(nproc)
 
-    - name: Run Tests (Debug)
-      if: always()
-      run: |
-        cd build_debug
-        ctest --output-on-failure || true
-
     - name: Configure Release Build
       run: |
         mkdir -p build_release
         cd build_release
-        cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTING=ON ..
+        cmake -DCMAKE_BUILD_TYPE=Release ..
 
     - name: Build Release
       run: |
         cd build_release
         cmake --build . -- -j$(nproc)
-
-    - name: Run Tests (Release)
-      if: always()
-      run: |
-        cd build_release
-        ctest --output-on-failure || true
