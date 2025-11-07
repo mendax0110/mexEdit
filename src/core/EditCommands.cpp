@@ -1,6 +1,7 @@
 #include <utility>
-#include "../include/core/EditCommands.h"
-#include "../include/utils/MemoryDebugger.h"
+#include "core/EditCommands.h"
+#include "utils/MemoryDebugger.h"
+#include "utils/Logger.h"
 
 using namespace mexedit::core;
 
@@ -11,16 +12,19 @@ InsertTextCommand::InsertTextCommand(std::shared_ptr<Document> document, std::sh
     , text_(std::move(text))
     , executed_(false)
 {
+    TRACE_FUNC
     TRACK_MEMORY(InsertTextCommand, this);
 }
 
 InsertTextCommand::~InsertTextCommand()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(InsertTextCommand, this);
 }
 
 void InsertTextCommand::execute()
 {
+    TRACE_FUNC
     if (document_)
     {
         document_->insertText(position_.line, position_.column, text_);
@@ -30,6 +34,7 @@ void InsertTextCommand::execute()
 
 void InsertTextCommand::undo()
 {
+    TRACE_FUNC
     if (executed_ && document_)
     {
         document_->deleteText(position_.line, position_.column, text_.length());
@@ -42,6 +47,7 @@ void InsertTextCommand::undo()
 
 std::string InsertTextCommand::getDescription() const
 {
+    TRACE_FUNC
     return "Insert text: \"" + text_ + "\"";
 }
 
@@ -52,16 +58,19 @@ DeleteTextCommand::DeleteTextCommand(std::shared_ptr<Document> document, std::sh
     , length_(length)
     , executed_(false)
 {
+    TRACE_FUNC
     TRACK_MEMORY(DeleteTextCommand, this);
 }
 
 DeleteTextCommand::~DeleteTextCommand()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(DeleteTextCommand, this);
 }
 
 void DeleteTextCommand::execute()
 {
+    TRACE_FUNC
     if (document_ && position_.line < document_->getLineCount())
     {
         const std::string& line = document_->getLine(position_.line);
@@ -77,6 +86,7 @@ void DeleteTextCommand::execute()
 
 void DeleteTextCommand::undo()
 {
+    TRACE_FUNC
     if (executed_ && document_ && !deletedText_.empty())
     {
         document_->insertText(position_.line, position_.column, deletedText_);
@@ -88,6 +98,7 @@ void DeleteTextCommand::undo()
 
 std::string DeleteTextCommand::getDescription() const
 {
+    TRACE_FUNC
     return "Delete text: \"" + deletedText_ + "\"";
 }
 
@@ -98,16 +109,19 @@ InsertLineCommand::InsertLineCommand(std::shared_ptr<Document> document, std::sh
     , content_(std::move(content))
     , executed_(false)
 {
+    TRACE_FUNC
     TRACK_MEMORY(InsertLineCommand, this);
 }
 
 InsertLineCommand::~InsertLineCommand()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(InsertLineCommand, this);
 }
 
 void InsertLineCommand::execute()
 {
+    TRACE_FUNC
     if (document_)
     {
         document_->insertLine(linePosition_, content_);
@@ -117,6 +131,7 @@ void InsertLineCommand::execute()
 
 void InsertLineCommand::undo()
 {
+    TRACE_FUNC
     if (executed_ && document_)
     {
         document_->deleteLine(linePosition_);
@@ -130,6 +145,7 @@ void InsertLineCommand::undo()
 
 std::string InsertLineCommand::getDescription() const
 {
+    TRACE_FUNC
     return "Insert line";
 }
 
@@ -139,16 +155,19 @@ DeleteLineCommand::DeleteLineCommand(std::shared_ptr<Document> document, std::sh
     , linePosition_(linePosition)
     , executed_(false)
 {
+    TRACE_FUNC
     TRACK_MEMORY(DeleteLineCommand, this);
 }
 
 DeleteLineCommand::~DeleteLineCommand()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(DeleteLineCommand, this);
 }
 
 void DeleteLineCommand::execute()
 {
+    TRACE_FUNC
     if (document_ && linePosition_ < document_->getLineCount())
     {
         deletedContent_ = document_->getLine(linePosition_);
@@ -159,6 +178,7 @@ void DeleteLineCommand::execute()
 
 void DeleteLineCommand::undo()
 {
+    TRACE_FUNC
     if (executed_ && document_)
     {
         document_->insertLine(linePosition_, deletedContent_);
@@ -171,5 +191,6 @@ void DeleteLineCommand::undo()
 
 std::string DeleteLineCommand::getDescription() const
 {
+    TRACE_FUNC
     return "Delete line: \"" + deletedContent_ + "\"";
 }

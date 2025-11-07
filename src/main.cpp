@@ -1,5 +1,6 @@
-#include "../include/EditorApplication.h"
-#include "../include/utils/MemoryDebugger.h"
+#include "EditorApplication.h"
+#include "utils/MemoryDebugger.h"
+#include "utils/Logger.h"
 #include <iostream>
 #include <memory>
 #include <filesystem>
@@ -30,6 +31,9 @@ int main(int argc, char* argv[])
         auto& memDebugger = mexedit::utils::MemoryDebugger::getInstance();
         memDebugger.describeLeakAndMemoryMap();
         memDebugger.printStats();
+
+        auto& logger = mexedit::utils::Logger::getInstance();
+        logger.writeLogsToFile();
 
         if (memDebugger.hasLeaks())
         {

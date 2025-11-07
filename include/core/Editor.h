@@ -44,7 +44,7 @@ namespace mexedit::core
          * 
          * @return std::shared_ptr<Document> 
          */
-        std::shared_ptr<Document> getDocument() const { return document_; }
+        [[nodiscard]] std::shared_ptr<Document> getDocument() const { return document_; }
         
         /**
          * @brief Check if a document is loaded
@@ -52,14 +52,14 @@ namespace mexedit::core
          * @return true 
          * @return false 
          */
-        bool hasDocument() const { return document_ != nullptr; }
+        [[nodiscard]] bool hasDocument() const { return document_ != nullptr; }
 
         /**
          * @brief Get the cursor
          * 
          * @return const Cursor& 
          */
-        const Cursor& getCursor() const { return *cursor_; }
+        [[nodiscard]] const Cursor& getCursor() const { return *cursor_; }
         
         /**
          * @brief Move the cursor to a specific position
@@ -182,7 +182,7 @@ namespace mexedit::core
          * @return true if the document has unsaved changes
          * @return false if the document is saved
          */
-        bool isModified() const;
+        [[nodiscard]] bool isModified() const;
 
         /**
          * @brief Undo the last action
@@ -206,7 +206,7 @@ namespace mexedit::core
          * @return true 
          * @return false 
          */
-        bool canUndo() const;
+        [[nodiscard]] bool canUndo() const;
         
         /**
          * @brief Check if there are actions to redo
@@ -214,7 +214,7 @@ namespace mexedit::core
          * @return true 
          * @return false 
          */
-        bool canRedo() const;
+        [[nodiscard]] bool canRedo() const;
 
         /**
          * @brief Set the document changed callback
@@ -262,7 +262,7 @@ namespace mexedit::core
          * @param position The position to validate
          * @return Cursor::Position The validated position
          */
-        Cursor::Position validateCursorPosition(const Cursor::Position& position) const;
+        [[nodiscard]] Cursor::Position validateCursorPosition(const Cursor::Position& position) const;
     };
 } // namespace mexedit::core
 

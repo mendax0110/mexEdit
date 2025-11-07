@@ -1,7 +1,7 @@
-#include "../include/core/Document.h"
-#include "../include/utils/FileUtils.h"
-#include "../include/utils/MemoryDebugger.h"
-#include <fstream>
+#include "core/Document.h"
+#include "utils/FileUtils.h"
+#include "utils/MemoryDebugger.h"
+#include "utils/Logger.h"
 #include <sstream>
 #include <stdexcept>
 
@@ -9,6 +9,7 @@ using namespace mexedit::core;
 
 Document::Document() : isModified_(false)
 {
+    TRACE_FUNC
     TRACK_MEMORY(Document, this);
     lines_.emplace_back();
 }
@@ -17,6 +18,7 @@ Document::Document(const std::filesystem::path& path)
     : filePath_(path)
     , isModified_(false)
 {
+    TRACE_FUNC
     TRACK_MEMORY(Document, this);
     if (!load(path))
     {
@@ -26,11 +28,13 @@ Document::Document(const std::filesystem::path& path)
 
 Document::~Document()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(Document, this);
 }
 
 bool Document::load(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     if (!utils::FileUtils::exists(path) || !utils::FileUtils::isReadable(path))
     {
         return false;
@@ -55,14 +59,16 @@ bool Document::load(const std::filesystem::path& path)
         
         return true;
     }
-    catch (const std::exception&)
+    catch (const std::exception& error)
     {
+        LOG_ERR("Failed to load file: " << error.what());
         return false;
     }
 }
 
 bool Document::save(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     std::filesystem::path savePath = path.empty() ? filePath_ : path;
     
     if (savePath.empty())
@@ -85,9 +91,9 @@ bool Document::save(const std::filesystem::path& path)
             return true;
         }
     }
-    catch (const std::exception&)
+    catch (const std::exception& error)
     {
-        // Fall through to return false
+        LOG_ERR("Failed to save file: " << error.what());
     }
     
     return false;
@@ -95,12 +101,14 @@ bool Document::save(const std::filesystem::path& path)
 
 const std::string& Document::getLine(size_t line) const
 {
+    TRACE_FUNC
     static const std::string emptyLine;
     return (line < lines_.size()) ? lines_[line] : emptyLine;
 }
 
 std::string Document::getText() const
 {
+    TRACE_FUNC
     std::ostringstream oss;
     for (size_t i = 0; i < lines_.size(); ++i)
     {
@@ -112,11 +120,13 @@ std::string Document::getText() const
 
 size_t Document::getLineLength(size_t line) const
 {
+    TRACE_FUNC
     return (line < lines_.size()) ? lines_[line].length() : 0;
 }
 
 void Document::insertText(size_t line, size_t column, const std::string& text)
 {
+    TRACE_FUNC
     ensureLineExists(line);
 
     if (column > lines_[line].length())
@@ -157,6 +167,7 @@ void Document::insertText(size_t line, size_t column, const std::string& text)
 
 void Document::deleteText(size_t line, size_t column, size_t length)
 {
+    TRACE_FUNC
     if (line >= lines_.size())
     {
         return;
@@ -176,6 +187,7 @@ void Document::deleteText(size_t line, size_t column, size_t length)
 
 void Document::insertLine(size_t line, const std::string& content)
 {
+    TRACE_FUNC
     if (line > lines_.size())
     {
         line = lines_.size();
@@ -187,6 +199,7 @@ void Document::insertLine(size_t line, const std::string& content)
 
 void Document::deleteLine(size_t line)
 {
+    TRACE_FUNC
     if (line < lines_.size() && lines_.size() > 1)
     {
         lines_.erase(lines_.begin() + line);
@@ -196,6 +209,7 @@ void Document::deleteLine(size_t line)
 
 void Document::clear()
 {
+    TRACE_FUNC
     lines_.clear();
     lines_.emplace_back();
     filePath_.clear();
@@ -204,6 +218,7 @@ void Document::clear()
 
 void Document::markModified()
 {
+    TRACE_FUNC
     isModified_ = true;
     if (changeCallback_)
     {
@@ -213,6 +228,7 @@ void Document::markModified()
 
 void Document::ensureLineExists(size_t line)
 {
+    TRACE_FUNC
     while (lines_.size() <= line)
     {
         lines_.emplace_back();

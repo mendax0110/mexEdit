@@ -1,23 +1,27 @@
-#include "../include/features/SyntaxHighlighter.h"
-#include "../include/utils/MemoryDebugger.h"
-#include "../include/utils/FileUtils.h"
+#include "features/SyntaxHighlighter.h"
+#include "utils/MemoryDebugger.h"
+#include "utils/FileUtils.h"
+#include "utils/Logger.h"
 #include <unordered_map>
 
 using namespace mexedit::features;
 
 SyntaxHighlighter::SyntaxHighlighter() : currentLanguage_("text")
 {
+    TRACE_FUNC
     loadLanguageDefinitions();
     TRACK_MEMORY(SyntaxHighlighter, this);
 }
 
 SyntaxHighlighter::~SyntaxHighlighter()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(SyntaxHighlighter, this);
 }
 
 void SyntaxHighlighter::detectLanguage(const std::filesystem::path& filePath)
 {
+    TRACE_FUNC
     std::string extension = utils::FileUtils::getExtension(filePath);
     
     if (extension == ".cpp" || extension == ".cxx" || extension == ".cc" || 
@@ -33,6 +37,10 @@ void SyntaxHighlighter::detectLanguage(const std::filesystem::path& filePath)
     {
         setLanguage("shell");
     }
+    else if (extension == ".log")
+    {
+        setLanguage("log");
+    }
     else
     {
         setLanguage("text");
@@ -41,12 +49,14 @@ void SyntaxHighlighter::detectLanguage(const std::filesystem::path& filePath)
 
 void SyntaxHighlighter::setLanguage(const std::string& languageName)
 {
+    TRACE_FUNC
     currentLanguage_ = languageName;
     currentDefinition_ = getLanguageDefinition(languageName);
 }
 
 std::vector<SyntaxToken> SyntaxHighlighter::analyzeLine(const std::string& line) const
 {
+    TRACE_FUNC
     std::vector<SyntaxToken> tokens;
     
     size_t pos = 0;
@@ -84,21 +94,25 @@ std::vector<SyntaxToken> SyntaxHighlighter::analyzeLine(const std::string& line)
 
 bool SyntaxHighlighter::isKeyword(const std::string& word) const
 {
+    TRACE_FUNC
     return currentDefinition_.keywords.count(word) > 0;
 }
 
 std::vector<std::string> SyntaxHighlighter::getSupportedLanguages()
 {
+    TRACE_FUNC
     return {"cpp", "python", "shell", "text"};
 }
 
 void SyntaxHighlighter::loadLanguageDefinitions()
 {
+    TRACE_FUNC
     // Languages are loaded on demand
 }
 
 LanguageDefinition SyntaxHighlighter::getLanguageDefinition(const std::string& languageName)
 {
+    TRACE_FUNC
     if (languageName == "cpp")
     {
         return createCppDefinition();
@@ -111,6 +125,10 @@ LanguageDefinition SyntaxHighlighter::getLanguageDefinition(const std::string& l
     {
         return createShellDefinition();
     }
+    else if (languageName == "log")
+    {
+        return createLogDefinition();
+    }
     else
     {
         return createPlainTextDefinition();
@@ -119,6 +137,7 @@ LanguageDefinition SyntaxHighlighter::getLanguageDefinition(const std::string& l
 
 LanguageDefinition SyntaxHighlighter::createCppDefinition()
 {
+    TRACE_FUNC
     LanguageDefinition def;
     def.name = "C++";
     def.keywords = {
@@ -139,6 +158,7 @@ LanguageDefinition SyntaxHighlighter::createCppDefinition()
 
 LanguageDefinition SyntaxHighlighter::createPythonDefinition()
 {
+    TRACE_FUNC
     LanguageDefinition def;
     def.name = "Python";
     def.keywords = {
@@ -154,6 +174,7 @@ LanguageDefinition SyntaxHighlighter::createPythonDefinition()
 
 LanguageDefinition SyntaxHighlighter::createShellDefinition()
 {
+    TRACE_FUNC
     LanguageDefinition def;
     def.name = "Shell";
     def.keywords = {
@@ -168,7 +189,23 @@ LanguageDefinition SyntaxHighlighter::createShellDefinition()
 
 LanguageDefinition SyntaxHighlighter::createPlainTextDefinition()
 {
+    TRACE_FUNC
     LanguageDefinition def;
     def.name = "Plain Text";
+    return def;
+}
+
+LanguageDefinition SyntaxHighlighter::createLogDefinition()
+{
+    TRACE_FUNC
+    LanguageDefinition def;
+    def.name = "Log File";
+    def.keywords = {
+        "ERROR", "WARN", "INFO", "DEBUG", "TRACE", "FATAL", "Exited", "Entered","Started", "Failed",
+        "Connection", "Timeout", "Exception", "Critical",
+        "Success", "Loading", "Saving", "Initialized",
+        "Shutdown", "Restart", "Listening", "Received", "Sent", "[" , "]"
+    };
+    def.lineCommentStart = "#";
     return def;
 }

@@ -1,6 +1,7 @@
-#include "../include/features/FileExplorer.h"
-#include "../include/utils/FileUtils.h"
-#include "../include/utils/MemoryDebugger.h"
+#include "features/FileExplorer.h"
+#include "utils/FileUtils.h"
+#include "utils/MemoryDebugger.h"
+#include "utils/Logger.h"
 #include <algorithm>
 #include <utility>
 
@@ -11,17 +12,20 @@ FileExplorer::FileExplorer(std::filesystem::path  rootPath)
     , selectedIndex_(0)
     , showHiddenFiles_(false)
 {
+    TRACE_FUNC
     TRACK_MEMORY(FileExplorer, this);
     refresh();
 }
 
 FileExplorer::~FileExplorer()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(FileExplorer, this);
 }
 
 void FileExplorer::setCurrentDirectory(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     if (utils::FileUtils::exists(path) && utils::FileUtils::isDirectory(path))
     {
         currentPath_ = path;
@@ -32,6 +36,7 @@ void FileExplorer::setCurrentDirectory(const std::filesystem::path& path)
 
 bool FileExplorer::navigateUp()
 {
+    TRACE_FUNC
     auto parent = currentPath_.parent_path();
     if (parent != currentPath_)
     {
@@ -43,6 +48,7 @@ bool FileExplorer::navigateUp()
 
 bool FileExplorer::navigateInto(const std::filesystem::path& subPath)
 {
+    TRACE_FUNC
     std::filesystem::path fullPath;
     
     if (subPath.is_absolute())
@@ -64,6 +70,7 @@ bool FileExplorer::navigateInto(const std::filesystem::path& subPath)
 
 void FileExplorer::refresh()
 {
+    TRACE_FUNC
     entries_.clear();
     
     try
@@ -116,14 +123,15 @@ void FileExplorer::refresh()
         }
         
     }
-    catch (const std::filesystem::filesystem_error&)
+    catch (const std::filesystem::filesystem_error& error)
     {
-        // Directory is not accessible, entries_ remains empty
+        LOG_ERR("Error reading directory '" << currentPath_.string() << "': " << error.what());
     }
 }
 
 void FileExplorer::setSelectedIndex(size_t index)
 {
+    TRACE_FUNC
     if (index < entries_.size())
     {
         selectedIndex_ = index;
@@ -131,13 +139,15 @@ void FileExplorer::setSelectedIndex(size_t index)
     }
 }
 
-const FileEntry* FileExplorer::getSelectedEntry() const
+std::optional<FileEntry> FileExplorer::getSelectedEntry() const
 {
-    return hasSelection() ? &entries_[selectedIndex_] : nullptr;
+    TRACE_FUNC
+    return hasSelection() ? std::make_optional(entries_[selectedIndex_]) : std::nullopt;
 }
 
 void FileExplorer::selectNext()
 {
+    TRACE_FUNC
     if (!entries_.empty() && selectedIndex_ < entries_.size() - 1)
     {
         selectedIndex_++;
@@ -147,6 +157,7 @@ void FileExplorer::selectNext()
 
 void FileExplorer::selectPrevious()
 {
+    TRACE_FUNC
     if (selectedIndex_ > 0)
     {
         selectedIndex_--;
@@ -156,6 +167,7 @@ void FileExplorer::selectPrevious()
 
 void FileExplorer::selectFirst()
 {
+    TRACE_FUNC
     if (!entries_.empty())
     {
         selectedIndex_ = 0;
@@ -165,6 +177,7 @@ void FileExplorer::selectFirst()
 
 void FileExplorer::selectLast()
 {
+    TRACE_FUNC
     if (!entries_.empty())
     {
         selectedIndex_ = entries_.size() - 1;
@@ -174,6 +187,7 @@ void FileExplorer::selectLast()
 
 void FileExplorer::setShowHiddenFiles(bool show)
 {
+    TRACE_FUNC
     if (showHiddenFiles_ != show)
     {
         showHiddenFiles_ = show;
@@ -181,13 +195,9 @@ void FileExplorer::setShowHiddenFiles(bool show)
     }
 }
 
-void FileExplorer::loadEntries()
-{
-    // This is now handled in refresh()
-}
-
 void FileExplorer::sortEntries()
 {
+    TRACE_FUNC
     std::sort(entries_.begin(), entries_.end(), [](const FileEntry& a, const FileEntry& b)
     {
         if (a.displayName == "..") return true;
@@ -204,6 +214,7 @@ void FileExplorer::sortEntries()
 
 void FileExplorer::notifySelection()
 {
+    TRACE_FUNC
     if (selectionCallback_ && hasSelection())
     {
         selectionCallback_(entries_[selectedIndex_].path);
@@ -212,6 +223,7 @@ void FileExplorer::notifySelection()
 
 std::string FileExplorer::formatFileSize(size_t size)
 {
+    TRACE_FUNC
     const char* units[] = {"B", "KB", "MB", "GB", "TB"};
     auto dsize = static_cast<double>(size);
     int unit = 0;
@@ -236,10 +248,12 @@ std::string FileExplorer::formatFileSize(size_t size)
 
 void FileExplorer::moveSelectionUp()
 {
+    TRACE_FUNC
     selectPrevious();
 }
 
 void FileExplorer::moveSelectionDown()
 {
+    TRACE_FUNC
     selectNext();
 }

@@ -56,7 +56,7 @@ namespace mexedit::core
          * 
          * @return true if the document is modified, false otherwise
          */
-        bool isModified() const { return isModified_; }
+        [[nodiscard]] bool isModified() const { return isModified_; }
         
         /**
          * @brief Get the current file path of the document

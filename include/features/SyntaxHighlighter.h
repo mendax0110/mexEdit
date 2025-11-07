@@ -148,6 +148,13 @@ namespace mexedit::features
          * @return LanguageDefinition 
          */
         static LanguageDefinition createPlainTextDefinition();
+
+        /**
+         * @brief Create the language definition for Log files
+         *
+         * @return LanguageDefinition
+         */
+        static LanguageDefinition createLogDefinition();
     };
 } // namespace mexedit::features
 

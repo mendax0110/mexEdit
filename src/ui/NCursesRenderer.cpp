@@ -1,8 +1,8 @@
-#include "../include/ui/Renderer.h"
-#include "../include/utils/MemoryDebugger.h"
+#include "ui/Renderer.h"
+#include "utils/MemoryDebugger.h"
+#include "utils/Logger.h"
 #include <ncurses.h>
 #include <stdexcept>
-#include <csignal>
 #include <termios.h>
 #include <unistd.h>
 #include <algorithm>
@@ -13,11 +13,13 @@ NCursesRenderer::NCursesRenderer()
     : initialized_(false)
     , originalTermios_()
 {
+    TRACE_FUNC
     TRACK_MEMORY(NCursesRenderer, this);
 }
 
 NCursesRenderer::~NCursesRenderer()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(NCursesRenderer, this);
     if (initialized_)
     {
@@ -27,6 +29,7 @@ NCursesRenderer::~NCursesRenderer()
 
 void NCursesRenderer::initialize()
 {
+    TRACE_FUNC
     if (initialized_)
     {
         return;
@@ -66,6 +69,7 @@ void NCursesRenderer::initialize()
 
 void NCursesRenderer::shutdown()
 {
+    TRACE_FUNC
     if (initialized_)
     {
         restoreTerminal();
@@ -76,11 +80,13 @@ void NCursesRenderer::shutdown()
 
 void NCursesRenderer::clear()
 {
+    TRACE_FUNC
     ::clear();
 }
 
 void NCursesRenderer::refresh()
 {
+    TRACE_FUNC
     // Use double-buffering approach for smoother updates
     wnoutrefresh(stdscr);
     doupdate();
@@ -88,6 +94,7 @@ void NCursesRenderer::refresh()
 
 void NCursesRenderer::clearArea(int y, int x, int height, int width)
 {
+    TRACE_FUNC
     // Use more efficient area clearing
     for (int row = y; row < y + height; ++row)
     {
@@ -97,6 +104,7 @@ void NCursesRenderer::clearArea(int y, int x, int height, int width)
 
 void NCursesRenderer::refreshArea(int y, int x, int height, int width)
 {
+    TRACE_FUNC
     // optimized refresh for specific areas
     touchline(stdscr, y, height);
     touchline(stdscr, x, width);
@@ -106,6 +114,7 @@ void NCursesRenderer::refreshArea(int y, int x, int height, int width)
 
 ScreenSize NCursesRenderer::getScreenSize() const
 {
+    TRACE_FUNC
     int height, width;
     getmaxyx(stdscr, height, width);
     return {width, height};
@@ -113,11 +122,13 @@ ScreenSize NCursesRenderer::getScreenSize() const
 
 void NCursesRenderer::drawText(int y, int x, const std::string& text)
 {
+    TRACE_FUNC
     mvprintw(y, x, "%s", text.c_str());
 }
 
 void NCursesRenderer::drawText(int y, int x, const std::string& text, ColorPair color)
 {
+    TRACE_FUNC
     attron(COLOR_PAIR(static_cast<int>(color)));
     mvprintw(y, x, "%s", text.c_str());
     attroff(COLOR_PAIR(static_cast<int>(color)));
@@ -125,6 +136,7 @@ void NCursesRenderer::drawText(int y, int x, const std::string& text, ColorPair 
 
 void NCursesRenderer::drawTextWithAttributes(int y, int x, const std::string& text, int attributes)
 {
+    TRACE_FUNC
     attron(attributes);
     mvprintw(y, x, "%s", text.c_str());
     attroff(attributes);
@@ -132,16 +144,19 @@ void NCursesRenderer::drawTextWithAttributes(int y, int x, const std::string& te
 
 void NCursesRenderer::drawHorizontalLine(int y, int startX, int endX)
 {
+    TRACE_FUNC
     mvhline(y, startX, ACS_HLINE, endX - startX + 1); // add color here
 }
 
 void NCursesRenderer::drawVerticalLine(int x, int startY, int endY)
 {
+    TRACE_FUNC
     mvvline(startY, x, ACS_VLINE, endY - startY + 1); // add color ere
 }
 
 void NCursesRenderer::drawBox(int y, int x, int height, int width)
 {
+    TRACE_FUNC
     // Draw corners
     mvaddch(y, x, ACS_ULCORNER);
     mvaddch(y, x + width - 1, ACS_URCORNER);
@@ -159,21 +174,25 @@ void NCursesRenderer::drawBox(int y, int x, int height, int width)
 
 void NCursesRenderer::setCursorPosition(const core::Cursor::Position& pos)
 {
+    TRACE_FUNC
     move(static_cast<int>(pos.line), static_cast<int>(pos.column));
 }
 
 void NCursesRenderer::setCursorVisible(bool visible)
 {
+    TRACE_FUNC
     curs_set(visible ? 1 : 0);
 }
 
 int NCursesRenderer::getInput()
 {
+    TRACE_FUNC
     return getch();
 }
 
 void NCursesRenderer::setupColors()
 {
+    TRACE_FUNC
     // Enable extended colors if available
     use_default_colors();
     
@@ -217,6 +236,7 @@ void NCursesRenderer::setupColors()
 
 void NCursesRenderer::configureTerminal()
 {
+    TRACE_FUNC
     // https://stackoverflow.com/questions/76128214/ncursesw-application-wont-catch-ctrl-c-s-z
     tcgetattr(STDIN_FILENO, &originalTermios_);
     struct termios newTermios = originalTermios_;
@@ -242,11 +262,13 @@ void NCursesRenderer::configureTerminal()
 
 void NCursesRenderer::restoreTerminal()
 {
+    TRACE_FUNC
     tcsetattr(STDIN_FILENO, TCSANOW, &originalTermios_);
 }
 
 void NCursesRenderer::drawModernBox(int y, int x, int height, int width, ColorPair color)
 {
+    TRACE_FUNC
     attron(COLOR_PAIR(static_cast<int>(color)));
     
     // Use ncurses ACS (Alternate Character Set) for consistent box drawing
@@ -259,13 +281,15 @@ void NCursesRenderer::drawModernBox(int y, int x, int height, int width, ColorPa
     mvaddch(y + height - 1, x + width - 1, ACS_LRCORNER); // ┘
     
     // Draw horizontal lines (top and bottom)
-    for (int i = x + 1; i < x + width - 1; i++) {
+    for (int i = x + 1; i < x + width - 1; i++)
+    {
         mvaddch(y, i, ACS_HLINE);                         // ─
         mvaddch(y + height - 1, i, ACS_HLINE);           // ─
     }
     
     // Draw vertical lines (left and right)
-    for (int i = y + 1; i < y + height - 1; i++) {
+    for (int i = y + 1; i < y + height - 1; i++)
+    {
         mvaddch(i, x, ACS_VLINE);                         // │
         mvaddch(i, x + width - 1, ACS_VLINE);            // │
     }
@@ -275,6 +299,7 @@ void NCursesRenderer::drawModernBox(int y, int x, int height, int width, ColorPa
 
 void NCursesRenderer::drawTitleBar(int y, int width, const std::string& title, ColorPair color)
 {
+    TRACE_FUNC
     attron(COLOR_PAIR(static_cast<int>(color)));
     
     // Create a centered title with padding
@@ -305,6 +330,7 @@ void NCursesRenderer::drawTitleBar(int y, int width, const std::string& title, C
 
 void NCursesRenderer::drawProgressBar(int y, int x, int width, float progress, ColorPair color)
 {
+    TRACE_FUNC
     attron(COLOR_PAIR(static_cast<int>(color)));
     
     // Clamp progress to 0.0-1.0

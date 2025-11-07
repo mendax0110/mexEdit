@@ -1,10 +1,9 @@
-#include "../include/utils/Clipboard.h"
-#include "../include/utils/MemoryDebugger.h"
+#include "utils/Clipboard.h"
+#include "utils/MemoryDebugger.h"
+#include "utils/Logger.h"
 #include <cstdlib>
 #include <cstdio>
 #include <memory>
-#include <stdexcept>
-#include <sstream>
 #include <array>
 
 using namespace mexedit::utils;
@@ -13,17 +12,20 @@ std::string Clipboard::clipboardContent_;
 
 Clipboard::Clipboard()
 {
+    TRACE_FUNC
     TRACK_MEMORY(Clipboard, this);
 }
 
 Clipboard::~Clipboard()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(Clipboard, this);
 }
 
 // Helper function to execute a command and get output
 std::string executeCommand(const std::string& cmd) 
 {
+    TRACE_FUNC
     std::array<char, 128> buffer{};
     std::string result;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
@@ -41,6 +43,7 @@ std::string executeCommand(const std::string& cmd)
 // Helper function to execute a command for writing
 bool executeWriteCommand(const std::string& cmd, const std::string& input)
 {
+    TRACE_FUNC
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "w"), pclose);
     if (!pipe)
     {
@@ -52,6 +55,7 @@ bool executeWriteCommand(const std::string& cmd, const std::string& input)
     
 void Clipboard::setText(const std::string& text)
 {
+    TRACE_FUNC
     // Store internally as fallback
     clipboardContent_ = text;
     
@@ -76,12 +80,13 @@ void Clipboard::setText(const std::string& text)
         executeWriteCommand("wl-copy", text);
         return;
     }
-    
-    // If no system clipboard tool available, just use internal storage
+
+    clipboardContent_ = text;
 }
     
 std::string Clipboard::getText()
 {
+    TRACE_FUNC
     // Try to get from system clipboard first
     std::string systemClipboard;
     
@@ -136,11 +141,13 @@ std::string Clipboard::getText()
     
 bool Clipboard::hasText()
 {
+    TRACE_FUNC
     return !getText().empty();
 }
     
 void Clipboard::clear()
 {
+    TRACE_FUNC
     clipboardContent_.clear();
     
     // Try to clear system clipboard

@@ -1,10 +1,8 @@
-#include "../include/EditorApplication.h"
-#include "../include/ui/Renderer.h"
-#include "../include/utils/Clipboard.h"
-#include "../include/features/SearchEngine.h"
-#include "../include/utils/MemoryDebugger.h"
+#include "EditorApplication.h"
+#include "utils/Clipboard.h"
+#include "utils/MemoryDebugger.h"
+#include "utils/Logger.h"
 #include <ncurses.h>
-#include <algorithm>
 #include <memory>
 
 using namespace mexedit;
@@ -15,6 +13,7 @@ EditorApplication::EditorApplication(std::unique_ptr<ui::IRenderer> renderer)
         , showLineNumbers_(true)
         , showFileExplorer_(true)
 {
+    TRACE_FUNC
     TRACK_MEMORY(EditorApplication, this);
 
     // Initialize core components
@@ -33,6 +32,7 @@ EditorApplication::EditorApplication(std::unique_ptr<ui::IRenderer> renderer)
 
 EditorApplication::~EditorApplication()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(EditorApplication, this);
     if (running_)
     {
@@ -42,6 +42,7 @@ EditorApplication::~EditorApplication()
 
 void EditorApplication::initialize()
 {
+    TRACE_FUNC
     renderer_->initialize();
     updateViewport();
     
@@ -57,6 +58,7 @@ void EditorApplication::initialize()
 
 void EditorApplication::run()
 {
+    TRACE_FUNC
     running_ = true;
     
     while (running_)
@@ -76,12 +78,14 @@ void EditorApplication::run()
 
 void EditorApplication::shutdown()
 {
+    TRACE_FUNC
     running_ = false;
     renderer_->shutdown();
 }
 
 bool EditorApplication::openFile(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     if (editor_->openFile(path))
     {
         syntaxHighlighter_->detectLanguage(path);
@@ -100,6 +104,7 @@ bool EditorApplication::openFile(const std::filesystem::path& path)
 
 bool EditorApplication::openSearchDialog(const std::string& pattern, bool newSearch)
 {
+    TRACE_FUNC
     if (!editor_->hasDocument())
         return false;
 
@@ -137,6 +142,7 @@ bool EditorApplication::openSearchDialog(const std::string& pattern, bool newSea
 
 bool EditorApplication::saveFile(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     if (path.empty() && editor_->getDocument()->getFilePath().empty())
     {
         showStatusMessage("Enter filename to save: ");
@@ -211,11 +217,13 @@ bool EditorApplication::saveFile(const std::filesystem::path& path)
 
 bool EditorApplication::saveFileAs(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     return saveFile(path);
 }
 
 void EditorApplication::newFile()
 {
+    TRACE_FUNC
     auto document = std::make_shared<core::Document>();
     editor_->setDocument(document);
     syntaxHighlighter_->setLanguage("text");
@@ -224,11 +232,13 @@ void EditorApplication::newFile()
 
 bool EditorApplication::hasUnsavedChanges() const
 {
+    TRACE_FUNC
     return editor_->isModified();
 }
 
 std::string EditorApplication::getCurrentFileName() const
 {
+    TRACE_FUNC
     if (editor_->hasDocument())
     {
         auto path = editor_->getDocument()->getFilePath();
@@ -239,25 +249,28 @@ std::string EditorApplication::getCurrentFileName() const
 
 void EditorApplication::onDocumentChanged()
 {
+    TRACE_FUNC
     markDirty(true, false, true, false);
 }
 
 void EditorApplication::onCursorMoved(const core::Cursor::Position& /* position */)
 {
+    int oldScrollOffsetY = viewport_.scrollOffsetY;
     scrollToEnsureCursorVisible();
-    if (!dirtyRegions_.editorArea)
+
+    if (viewport_.scrollOffsetY != oldScrollOffsetY)
     {
-        markDirty(false, false, true, true);
+        markDirty(true, false, true, false);
     }
     else
     {
-        // Editor area is already dirty, just ensure status bar is updated
-        markDirty(false, false, true, false);
+        markDirty(false, false, true, true);
     }
 }
 
 void EditorApplication::onKeyPressed(int key)
 {
+    TRACE_FUNC
     if ((key == 10 || key == 13) && searchActive_)
     {
         // Continue search from last match
@@ -290,7 +303,7 @@ void EditorApplication::onKeyPressed(int key)
         // File explorer check
         if (showFileExplorer_ && fileExplorer_->hasSelection())
         {
-            const auto* entry = fileExplorer_->getSelectedEntry();
+            auto entry = fileExplorer_->getSelectedEntry();
             if (entry && !entry->isDirectory)
             {
                 openFile(entry->path);
@@ -391,6 +404,7 @@ void EditorApplication::onKeyPressed(int key)
 
 void EditorApplication::render()
 {
+    TRACE_FUNC
     if (dirtyRegions_.fullRedraw)
     {
         renderer_->clear();
@@ -448,6 +462,7 @@ void EditorApplication::render()
 
 void EditorApplication::renderFileExplorer()
 {
+    TRACE_FUNC
     if (!showFileExplorer_) return;
     
     auto screenSize = renderer_->getScreenSize();
@@ -527,6 +542,7 @@ void EditorApplication::renderFileExplorer()
 
 void EditorApplication::renderEditor()
 {
+    TRACE_FUNC
     if (!editor_->hasDocument()) return;
     
     auto document = editor_->getDocument();
@@ -696,6 +712,7 @@ void EditorApplication::renderEditor()
 
 void EditorApplication::renderStatusBar()
 {
+    TRACE_FUNC
     auto screenSize = renderer_->getScreenSize();
     int statusY = screenSize.height - 1;
     
@@ -738,6 +755,7 @@ void EditorApplication::renderStatusBar()
 
 void EditorApplication::handleMovementKey(int key, bool isShiftArrow)
 {
+    TRACE_FUNC
     auto pos = editor_->getCursor().getPosition();
     
     switch (key)
@@ -848,6 +866,7 @@ void EditorApplication::handleMovementKey(int key, bool isShiftArrow)
 
 void EditorApplication::handleEditingKey(int key)
 {
+    TRACE_FUNC
     switch (key)
     {
         case KEY_BACKSPACE:
@@ -858,6 +877,14 @@ void EditorApplication::handleEditingKey(int key)
             }
             else
             {
+                if (editor_->getCursor().getPosition().column >=4)
+                {
+                    for (int i=0; i<4; ++i)
+                    {
+                        editor_->deleteBackward();
+                    }
+                }
+                else
                 editor_->deleteBackward();
             }
             break;
@@ -884,6 +911,7 @@ void EditorApplication::handleEditingKey(int key)
 
 void EditorApplication::handleFunctionKey(int key)
 {
+    TRACE_FUNC
     switch (key)
     {
         case KEY_F(1): // Help
@@ -895,7 +923,7 @@ void EditorApplication::handleFunctionKey(int key)
         case KEY_F(3): // Open
             if (fileExplorer_->hasSelection())
             {
-                const auto* entry = fileExplorer_->getSelectedEntry();
+                auto entry = fileExplorer_->getSelectedEntry();
                 if (entry && !entry->isDirectory)
                 {
                     openFile(entry->path);
@@ -929,6 +957,7 @@ void EditorApplication::handleFunctionKey(int key)
 
 void EditorApplication::handleControlKey(int key)
 {
+    TRACE_FUNC
     switch (key)
     {
         case CTRL_KEY('z'):
@@ -1057,6 +1086,7 @@ void EditorApplication::handleControlKey(int key)
 
 void EditorApplication::updateViewport()
 {
+    TRACE_FUNC
     auto screenSize = renderer_->getScreenSize();
     
     // File explorer on the right side
@@ -1067,6 +1097,7 @@ void EditorApplication::updateViewport()
 
 void EditorApplication::scrollToEnsureCursorVisible()
 {
+    TRACE_FUNC
     auto pos = editor_->getCursor().getPosition();
     
     if (static_cast<int>(pos.line) < viewport_.scrollOffsetY)
@@ -1081,6 +1112,7 @@ void EditorApplication::scrollToEnsureCursorVisible()
 
 void EditorApplication::scrollFileExplorerIntoView()
 {
+    TRACE_FUNC
     if (!showFileExplorer_) return;
 
     int explorerHeight = renderer_->getScreenSize().height - 1;
@@ -1098,6 +1130,7 @@ void EditorApplication::scrollFileExplorerIntoView()
 
 bool EditorApplication::promptSaveChanges()
 {
+    TRACE_FUNC
     showStatusMessage("Save changes? (y/n)");
     auto screenSize = renderer_->getScreenSize();
     renderer_->clearArea(screenSize.height - 1, 0, 1, screenSize.width);
@@ -1112,11 +1145,13 @@ bool EditorApplication::promptSaveChanges()
 
 void EditorApplication::showStatusMessage(const std::string& message)
 {
+    TRACE_FUNC
     statusMessage_ = message;
 }
 
 void EditorApplication::doRenderUpdateBar()
 {
+    TRACE_FUNC
     auto screenSize = renderer_->getScreenSize();
     renderer_->clearArea(screenSize.height - 1, 0, 1, screenSize.width);
     renderStatusBar();
@@ -1125,6 +1160,7 @@ void EditorApplication::doRenderUpdateBar()
 
 void EditorApplication::showCommandHelp()
 {
+    TRACE_FUNC
     showStatusMessage("Commands: :help :open :save :new :quit :toggle-explorer :toggle-numbers :search | ESC:Cancel");
     doRenderUpdateBar();
     
@@ -1164,6 +1200,7 @@ void EditorApplication::showCommandHelp()
 
 void EditorApplication::markDirty(bool editor, bool explorer, bool status, bool cursor)
 {
+    TRACE_FUNC
     if (editor) dirtyRegions_.editorArea = true;
     if (explorer) dirtyRegions_.fileExplorer = true;
     if (status) dirtyRegions_.statusBar = true;
@@ -1184,6 +1221,7 @@ void EditorApplication::markDirty(bool editor, bool explorer, bool status, bool 
 
 void EditorApplication::clearDirtyRegions()
 {
+    TRACE_FUNC
     dirtyRegions_.fullRedraw = false;
     dirtyRegions_.editorArea = false;
     dirtyRegions_.fileExplorer = false;
@@ -1193,6 +1231,7 @@ void EditorApplication::clearDirtyRegions()
 
 void EditorApplication::startSelection()
 {
+    TRACE_FUNC
     selection_.isActive = true;
     selection_.startPos = editor_->getCursor().getPosition();
     selection_.endPos = selection_.startPos;
@@ -1201,6 +1240,7 @@ void EditorApplication::startSelection()
 
 void EditorApplication::endSelection()
 {
+    TRACE_FUNC
     if (selection_.isActive)
     {
         selection_.endPos = editor_->getCursor().getPosition();
@@ -1211,6 +1251,7 @@ void EditorApplication::endSelection()
 
 void EditorApplication::clearSelection()
 {
+    TRACE_FUNC
     if (selection_.isActive)
     {
         selection_.isActive = false;
@@ -1220,6 +1261,7 @@ void EditorApplication::clearSelection()
 
 bool EditorApplication::isPositionSelected(size_t line, size_t column) const
 {
+    TRACE_FUNC
     if (!selection_.isActive)
         return false;
     
@@ -1256,6 +1298,7 @@ bool EditorApplication::isPositionSelected(size_t line, size_t column) const
 
 std::string EditorApplication::copySelection() const
 {
+    TRACE_FUNC
     if (!selection_.isActive || !editor_->hasDocument())
         return "";
     
@@ -1307,6 +1350,7 @@ std::string EditorApplication::copySelection() const
 
 void EditorApplication::deleteSelection()
 {
+    TRACE_FUNC
     if (!selection_.isActive || !editor_->hasDocument())
         return;
     
@@ -1373,6 +1417,7 @@ void EditorApplication::deleteSelection()
 
 void EditorApplication::handleCommand(const std::string& command)
 {
+    TRACE_FUNC
     if (command == ":help" || command == "help")
     {
         showStatusMessage("Commands: :open <file> :save [file] :new :quit :toggle-explorer :toggle-numbers");

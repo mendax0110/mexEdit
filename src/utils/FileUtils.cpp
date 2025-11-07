@@ -1,5 +1,6 @@
-#include "../include/utils/FileUtils.h"
-#include "../include/utils/MemoryDebugger.h"
+#include "utils/FileUtils.h"
+#include "utils/MemoryDebugger.h"
+#include "utils/Logger.h"
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -8,28 +9,33 @@ using namespace mexedit::utils;
 
 FileUtils::FileUtils()
 {
+    TRACE_FUNC
     TRACK_MEMORY(FileUtils, this);
 }
 
 FileUtils::~FileUtils()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(FileUtils, this);
 }
 
 bool FileUtils::exists(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     std::error_code ec;
     return std::filesystem::exists(path, ec);
 }
 
 bool FileUtils::isReadable(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     std::ifstream file(path);
     return file.good();
 }
 
 bool FileUtils::isWritable(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     if (exists(path))
     {
         std::ofstream file(path, std::ios::app);
@@ -46,27 +52,32 @@ bool FileUtils::isWritable(const std::filesystem::path& path)
 
 bool FileUtils::isDirectory(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     std::error_code ec;
     return std::filesystem::is_directory(path, ec);
 }
 
 std::string FileUtils::getExtension(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     return path.extension().string();
 }
 
 std::string FileUtils::getBasename(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     return path.filename().string();
 }
 
 std::filesystem::path FileUtils::getDirectory(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     return path.parent_path();
 }
 
 std::vector<std::string> FileUtils::readLines(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     std::vector<std::string> lines;
     std::ifstream file(path);
     
@@ -86,6 +97,7 @@ std::vector<std::string> FileUtils::readLines(const std::filesystem::path& path)
 
 bool FileUtils::writeLines(const std::filesystem::path& path, const std::vector<std::string>& lines)
 {
+    TRACE_FUNC
     try
     {
         std::ofstream file(path);
@@ -105,14 +117,16 @@ bool FileUtils::writeLines(const std::filesystem::path& path, const std::vector<
         
         return file.good();
     }
-    catch (const std::exception&)
+    catch (const std::exception& error)
     {
+        LOG_ERR("Error writing lines to file '" << path.string() << "': " << error.what());
         return false;
     }
 }
 
 std::string FileUtils::readFile(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     std::ifstream file(path);
     if (!file.is_open())
     {
@@ -126,6 +140,7 @@ std::string FileUtils::readFile(const std::filesystem::path& path)
 
 bool FileUtils::writeFile(const std::filesystem::path& path, const std::string& content)
 {
+    TRACE_FUNC
     try 
     {
         std::ofstream file(path);
@@ -137,14 +152,16 @@ bool FileUtils::writeFile(const std::filesystem::path& path, const std::string& 
         file << content;
         return file.good();
     }
-    catch (const std::exception&)
+    catch (const std::exception& error)
     {
+        LOG_ERR("Error writing to file '" << path.string() << "': " << error.what());
         return false;
     }
 }
 
 std::vector<std::filesystem::directory_entry> FileUtils::listDirectory(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     std::vector<std::filesystem::directory_entry> entries;
 
     try
@@ -157,13 +174,11 @@ std::vector<std::filesystem::directory_entry> FileUtils::listDirectory(const std
     }
     catch (const std::filesystem::filesystem_error& e)
     {
-        std::cerr << "Error listing directory '" << path.string()
-                  << "': " << e.what() << std::endl;
+        LOG_ERR("Filesystem error listing directory '" << path.string() << "': " << e.what());
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Unexpected error listing directory '"
-                  << path.string() << "': " << e.what() << std::endl;
+        LOG_ERR("Unexpected error listing directory '" << path.string() << "': " << e.what());
     }
 
     return entries;
@@ -171,6 +186,7 @@ std::vector<std::filesystem::directory_entry> FileUtils::listDirectory(const std
 
 bool FileUtils::createDirectory(const std::filesystem::path& path)
 {
+    TRACE_FUNC
     std::error_code ec;
     return std::filesystem::create_directories(path, ec);
 }

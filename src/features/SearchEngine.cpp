@@ -1,5 +1,6 @@
-#include "../include/features/SearchEngine.h"
-#include "../include/utils/MemoryDebugger.h"
+#include "features/SearchEngine.h"
+#include "utils/MemoryDebugger.h"
+#include "utils/Logger.h"
 #include <algorithm>
 #include <cstdint>
 #include <ranges>
@@ -10,16 +11,19 @@ SearchEngine::SearchEngine()
     : currentMatches_()
     , searchHistory_()
 {
+    TRACE_FUNC
     TRACK_MEMORY(SearchEngine, this);
 }
 
 SearchEngine::~SearchEngine()
 {
+    TRACE_FUNC
     UNTRACK_MEMORY(SearchEngine, this);
 }
 
 std::vector<SearchMatch> SearchEngine::findAll(const std::string& pattern, const std::vector<std::string>& document, const SearchOptions& options)
 {
+    TRACE_FUNC
     std::vector<SearchMatch> matches;
     
     for (size_t lineNum = 0; lineNum < document.size(); ++lineNum)
@@ -36,7 +40,8 @@ std::vector<SearchMatch> SearchEngine::findAll(const std::string& pattern, const
 }
 
 SearchMatch SearchEngine::findNext(const std::string& pattern, const std::vector<std::string>& document, size_t startLine, size_t startColumn, const SearchOptions& options)
-{    
+{
+    TRACE_FUNC
     for (size_t lineNum = startLine; lineNum < document.size(); ++lineNum)
     {
         size_t searchStart = (lineNum == startLine) ? startColumn : 0;
@@ -67,7 +72,7 @@ SearchMatch SearchEngine::findNext(const std::string& pattern, const std::vector
 
 SearchMatch SearchEngine::findPrevious(const std::string& pattern,const std::vector<std::string>& document,size_t startLine,size_t startColumn,const SearchOptions& options)
 {
-    
+    TRACE_FUNC
     for (int lineNum = static_cast<int>(std::min(startLine, document.size() - 1)); lineNum >= 0; --lineNum)
     {
         const std::string& line = document[lineNum];
@@ -103,6 +108,7 @@ SearchMatch SearchEngine::findPrevious(const std::string& pattern,const std::vec
 
 int SearchEngine::replaceAll(const std::string& pattern, const std::string& replacement, std::vector<std::string>& document, const SearchOptions& options)
 {
+    TRACE_FUNC
     int replacements = 0;
     
     for (auto & line : document)
@@ -144,9 +150,9 @@ int SearchEngine::replaceAll(const std::string& pattern, const std::string& repl
                 }
             }
         }
-        catch (const std::regex_error&)
+        catch (const std::regex_error& error)
         {
-            // Invalid regex, skip this line
+            LOG_ERR("Regex error in replaceAll: " << error.what() << " | Pattern: " << pattern);
         }
     }
     
@@ -155,7 +161,7 @@ int SearchEngine::replaceAll(const std::string& pattern, const std::string& repl
 
 bool SearchEngine::replaceNext(const std::string& pattern, const std::string& replacement, std::vector<std::string>& document, size_t& line, size_t& column, const SearchOptions& options)
 {
-    
+    TRACE_FUNC
     SearchMatch match = findNext(pattern, document, line, column, options);
     if (match.line < document.size())
     {
@@ -172,6 +178,7 @@ bool SearchEngine::replaceNext(const std::string& pattern, const std::string& re
 
 void SearchEngine::addToHistory(const std::string& pattern)
 {
+    TRACE_FUNC
     auto it = std::find(searchHistory_.begin(), searchHistory_.end(), pattern);
     if (it != searchHistory_.end())
     {
@@ -188,6 +195,7 @@ void SearchEngine::addToHistory(const std::string& pattern)
 
 std::vector<SearchMatch> SearchEngine::searchInLine(const std::string& line, size_t lineNumber, const std::string& pattern, const SearchOptions& options) const
 {
+    TRACE_FUNC
     std::vector<SearchMatch> matches;
     
     if (pattern.empty())
@@ -238,9 +246,9 @@ std::vector<SearchMatch> SearchEngine::searchInLine(const std::string& line, siz
             }
         }
     }
-    catch (const std::regex_error&)
+    catch (const std::regex_error& error)
     {
-        // Invalid regex, return empty matches
+        LOG_ERR("Regex error in searchInLine: " << error.what() << " | Pattern: " << pattern);
     }
     
     return matches;
@@ -248,6 +256,7 @@ std::vector<SearchMatch> SearchEngine::searchInLine(const std::string& line, siz
 
 std::regex SearchEngine::createRegexPattern(const std::string& pattern, const SearchOptions& options) const
 {
+    TRACE_FUNC
     std::regex_constants::syntax_option_type flags = std::regex_constants::ECMAScript;
     
     if (!options.caseSensitive)
@@ -272,6 +281,7 @@ std::regex SearchEngine::createRegexPattern(const std::string& pattern, const Se
 
 std::string SearchEngine::escapeRegexSpecialChars(const std::string& input)
 {
+    TRACE_FUNC
     std::string result;
     result.reserve(input.size() * 2); // Reserve space for potential escapes
     
