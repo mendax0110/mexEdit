@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <optional>
 
 /// @brief Features namespace for mexEdit \namespace mexedit::features
 namespace mexedit::features
