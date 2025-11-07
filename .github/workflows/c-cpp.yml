@@ -1,0 +1,46 @@
+name: mexEdit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      CC: gcc
+      CXX: g++
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake pkg-config libncurses5-dev libncursesw5-dev
+
+    - name: Configure Debug Build
+      run: |
+        mkdir -p build_debug
+        cd build_debug
+        cmake -DCMAKE_BUILD_TYPE=Debug ..
+
+    - name: Build Debug
+      run: |
+        cd build_debug
+        cmake --build . -- -j$(nproc)
+
+    - name: Configure Release Build
+      run: |
+        mkdir -p build_release
+        cd build_release
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+
+    - name: Build Release
+      run: |
+        cd build_release
+        cmake --build . -- -j$(nproc)
