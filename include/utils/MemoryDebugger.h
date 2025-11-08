@@ -46,8 +46,6 @@ namespace mexedit::utils
             const void* voidPtr = static_cast<const void*>(ptr);
             if (allTrackedPointers_.count(voidPtr))
             {
-                //std::cout << "[WARNING] Object " << objectType << " at " << ptr
-                //          << " is already being tracked! Possible double tracking in constructor." << std::endl;
                 return;
             }
 
@@ -55,9 +53,6 @@ namespace mexedit::utils
             totalObjects_++;
             allTrackedPointers_.insert(voidPtr);
             objectPointers_[objectType].insert(voidPtr);
-
-            //std::cout << "[DEBUG] Created " << objectType << " at " << ptr
-            //          << " (Total: " << objectCounts_[objectType] << ")" << std::endl;
         }
 
         /**
@@ -76,8 +71,6 @@ namespace mexedit::utils
 
             if (!allTrackedPointers_.count(voidPtr))
             {
-                //std::cout << "[WARNING] Attempting to destroy untracked object " << objectType
-                //          << " at " << ptr << std::endl;
                 return;
             }
 
@@ -88,9 +81,6 @@ namespace mexedit::utils
                 allTrackedPointers_.erase(voidPtr);
                 objectPointers_[objectType].erase(voidPtr);
             }
-
-            //std::cout << "[DEBUG] Destroyed " << objectType << " at " << ptr
-            //          << " (Remaining: " << objectCounts_[objectType] << ")" << std::endl;
         }
 
         /**

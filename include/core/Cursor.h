@@ -67,7 +67,7 @@ namespace mexedit::core
          * 
          * @return const Position& 
          */
-        const Position& getPosition() const { return position_; }
+        [[nodiscard]] const Position& getPosition() const { return position_; }
         
         /**
          * @brief Set the cursor position

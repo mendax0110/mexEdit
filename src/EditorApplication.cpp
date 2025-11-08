@@ -256,9 +256,10 @@ void EditorApplication::onDocumentChanged()
 void EditorApplication::onCursorMoved(const core::Cursor::Position& /* position */)
 {
     int oldScrollOffsetY = viewport_.scrollOffsetY;
+    int oldScrollOffsetX = viewport_.scrollOffsetX;
     scrollToEnsureCursorVisible();
 
-    if (viewport_.scrollOffsetY != oldScrollOffsetY)
+    if (viewport_.scrollOffsetY != oldScrollOffsetY || viewport_.scrollOffsetX != oldScrollOffsetX)
     {
         markDirty(true, false, true, false);
     }
@@ -444,7 +445,8 @@ void EditorApplication::render()
     auto pos = editor_->getCursor().getPosition();
     auto screenSize = renderer_->getScreenSize();
     
-    int screenX = viewport_.editorStartX + (showLineNumbers_ ? 6 : 0) + static_cast<int>(pos.column);
+    //int screenX = viewport_.editorStartX + (showLineNumbers_ ? 6 : 0) + static_cast<int>(pos.column);
+    int screenX = viewport_.editorStartX + (showLineNumbers_ ? 6 : 0)+ static_cast<int>(pos.column) - viewport_.scrollOffsetX;
     int screenY = static_cast<int>(pos.line) - viewport_.scrollOffsetY;
     
     int maxX = showFileExplorer_ ? screenSize.width - viewport_.fileExplorerWidth - 1 : screenSize.width;
@@ -595,7 +597,18 @@ void EditorApplication::renderEditor()
         
         if (maxWidth > 0)
         {
-            std::string displayLine = line.substr(0, std::min(static_cast<size_t>(maxWidth), line.length()));
+            size_t startCol = static_cast<size_t>(viewport_.scrollOffsetX);
+            size_t endCol = startCol + static_cast<size_t>(maxWidth);
+
+            std::string displayLine;
+            if (startCol < line.length())
+            {
+                displayLine = line.substr(startCol, endCol - startCol);
+            }
+            else
+            {
+                displayLine = "";
+            }
             
             // Apply syntax highlighting if available
             if (syntaxHighlighter_ && syntaxHighlighter_->getCurrentLanguage() != "text")
@@ -1108,6 +1121,16 @@ void EditorApplication::scrollToEnsureCursorVisible()
     {
         viewport_.scrollOffsetY = static_cast<int>(pos.line) - viewport_.maxVisibleLines + 1;
     }
+
+    int visibleCols = viewport_.editorWidth - (showLineNumbers_ ? 6 : 0);
+    if (pos.column < static_cast<size_t>(viewport_.scrollOffsetX))
+    {
+        viewport_.scrollOffsetX = static_cast<int>(pos.column);
+    }
+    else if (pos.column >= static_cast<size_t>(viewport_.scrollOffsetX + visibleCols))
+    {
+        viewport_.scrollOffsetX = static_cast<int>(pos.column) - visibleCols + 1;
+    }
 }
 
 void EditorApplication::scrollFileExplorerIntoView()
@@ -1501,5 +1524,3 @@ void EditorApplication::handleCommand(const std::string& command)
         showStatusMessage("Unknown command: " + command + " | Type :help for available commands");
     }
 }
-
-

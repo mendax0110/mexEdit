@@ -133,6 +133,7 @@ namespace mexedit
             int editorWidth;
             int maxVisibleLines;
             int scrollOffsetY = 0;
+            int scrollOffsetX = 0;
             int fileExplorerScrollOffset = 0;
         } viewport_;
         

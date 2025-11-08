@@ -110,7 +110,7 @@ namespace mexedit::features
          *
          * @return const FileEntry*
          */
-        std::optional<FileEntry> getSelectedEntry() const;
+        [[nodiscard]] std::optional<FileEntry> getSelectedEntry() const;
 
         /**
          * @brief Check if there is a selection

@@ -57,7 +57,9 @@ namespace mexedit::utils
                 case Level::TRACE:   oss << "[TRACE] "; break;
             }
             if (!fileName.empty())
+            {
                 oss << "(" << fileName << ":" << lineNumber << ") ";
+            }
             oss << message;
             return oss.str();
         }
@@ -92,17 +94,28 @@ namespace mexedit::utils
          */
         void writeLogsToFile()
         {
-            std::string filePath = "system_" + getCurrentTimestamp() + ".log";
+            std::filesystem::path logDir = "logs";
+            if (!std::filesystem::exists(logDir))
+            {
+                std::filesystem::create_directories(logDir);
+            }
+
+            std::string fileName = "system_" + getCurrentTimestamp() + ".log";
+            std::filesystem::path filePath = logDir / fileName;
+
             std::ofstream file(filePath);
             if (!file.is_open())
             {
                 std::cerr << "Could not open log file: " << filePath << std::endl;
                 return;
             }
+
             for (const auto& [_, log] : logs_)
             {
                 file << log.toString() << std::endl;
             }
+
+            file.close();
         }
 
         /**
@@ -138,7 +151,37 @@ namespace mexedit::utils
         static std::string getBreadcrumbPrefix()
         {
             std::ostringstream oss;
-            for (size_t i=0; i<callStack_.size(); ++i) oss << "  ";
+            size_t depth = callStack_.size();
+            if (depth == 0)
+            {
+                return "";
+            }
+
+            for (size_t i = 0; i < depth - 1; ++i)
+            {
+                oss << "|  ";
+            }
+
+            oss << "|_ ";
+            return oss.str();
+        }
+
+        /**
+         * @brief Create a prefix string based on the call stack depth
+         * @param depth The depth of the call stack
+         * @return A string representing the prefix
+         */
+        static std::string makePrefix(size_t depth)
+        {
+            std::ostringstream oss;
+            for (size_t i = 1; i < depth; ++i)
+            {
+                oss << "|  ";
+            }
+            if (depth > 0)
+            {
+                oss << "|_ ";
+            }
             return oss.str();
         }
 
@@ -154,7 +197,7 @@ namespace mexedit::utils
      * @param mangledName The mangled function name
      * @return A std::string representing the demangled function name
      */
-    inline std::string demangle(const char* mangledName)
+    static inline std::string demangle(const char* mangledName)
     {
         int status = 0;
         std::unique_ptr<char[], void(*)(void*)> demangled(
@@ -169,6 +212,7 @@ namespace mexedit::utils
         std::string funcName;
         std::string fileName;
         size_t lineNumber;
+        size_t stackDepth;
 
         /**
          * @brief Constructor that logs function entry
@@ -182,10 +226,11 @@ namespace mexedit::utils
                 , lineNumber(line)
         {
             Logger::pushBreadcrumb(funcName);
+            stackDepth = Logger::callStack_.size();
             Logger::getInstance().addLog(
             {
                 LogContainer::Level::TRACE,
-                Logger::getBreadcrumbPrefix() + "|_ Entered " + funcName,
+                Logger::makePrefix(stackDepth) + "Entered " + funcName,
                 lineNumber,
                 fileName,
                 Logger::getCurrentTimestamp()
@@ -200,7 +245,7 @@ namespace mexedit::utils
             Logger::getInstance().addLog(
             {
                 LogContainer::Level::TRACE,
-                Logger::getBreadcrumbPrefix() + "|_ Exited " + funcName,
+                Logger::makePrefix(Logger::callStack_.size()) + "Exited " + funcName,
                 lineNumber,
                 fileName,
                 Logger::getCurrentTimestamp()
@@ -208,8 +253,6 @@ namespace mexedit::utils
             Logger::popBreadcrumb();
         }
     };
-
-
 } // namespace mexedit::utils
 
 
@@ -233,7 +276,11 @@ namespace mexedit::utils
 #define LOG_ERR(msg)     LOG_IMPL(mexedit::utils::LogContainer::Level::ERR, msg)
 #define LOG_TRACE(msg)   LOG_IMPL(mexedit::utils::LogContainer::Level::TRACE, msg)
 
-#define TRACE_FUNC \
-    mexedit::utils::TraceRAII _trace_raii(__PRETTY_FUNCTION__, __FILE__, __LINE__);
+#ifdef NDEBUG
+    #define TRACE_FUNC
+#else
+    #define TRACE_FUNC \
+        mexedit::utils::TraceRAII _trace_raii(__PRETTY_FUNCTION__, __FILE__, __LINE__);
+#endif
 
 #endif // MEXEDIT_LOGGER_H
